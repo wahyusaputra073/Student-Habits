@@ -40,4 +40,8 @@ class LecturerRepositoryImpl @Inject constructor(
     override suspend fun deleteLecturer(id: Int) {
         lecturerDao.deleteLecturerById(id.toString()) // Pastikan untuk menghapus dosen dari database
     }
+
+     override suspend fun deletePhoneNumber(phoneNumber: String) {
+        lecturerDao.deletePhoneNumber(phoneNumber) // Panggilan ke DAO
+    }
 }

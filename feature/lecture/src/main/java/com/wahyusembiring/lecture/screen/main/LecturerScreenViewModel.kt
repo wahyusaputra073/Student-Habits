@@ -31,11 +31,7 @@ class LecturerScreenViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            lecturerRepository.getAllLecturerWithSubjects().collect { listOfLecturerWithSubjects ->
-                _state.update {
-                    it.copy(listOfLecturerWithSubjects = listOfLecturerWithSubjects)
-                }
-            }
+            refreshLecturerList()
         }
     }
 
@@ -44,6 +40,7 @@ class LecturerScreenViewModel @Inject constructor(
             is LecturerScreenUIEvent.OnAddLecturerClick -> onAddLecturerClick()
             is LecturerScreenUIEvent.OnLecturerClick -> onLecturerClick(event.lecturerWithSubjects)
             is LecturerScreenUIEvent.OnDeleteLecturerClick -> onDeleteLecturerClick(event.lecturerWithSubjects)
+            is LecturerScreenUIEvent.OnDeletePhoneNumberClick -> onDeletePhoneNumberClick(event.phoneNumber)
         }
     }
 
@@ -67,8 +64,17 @@ class LecturerScreenViewModel @Inject constructor(
         }
     }
 
-    private
-    suspend fun refreshLecturerList() {
+    private fun onDeletePhoneNumberClick(phoneNumber: String) {
+        viewModelScope.launch {
+            Log.d("LecturerViewModel", "Deleting phone number: $phoneNumber")
+            withContext(Dispatchers.IO) {
+                lecturerRepository.deletePhoneNumber(phoneNumber)
+            }
+            refreshLecturerList()
+        }
+    }
+
+    private suspend fun refreshLecturerList() {
         Log.d("LecturerViewModel", "Refreshing lecturer list...")
         lecturerRepository.getAllLecturerWithSubjects().collect { listOfLecturerWithSubjects ->
             _state.update {
@@ -78,3 +84,4 @@ class LecturerScreenViewModel @Inject constructor(
         Log.d("LecturerViewModel", "Lecturer list refreshed.")
     }
 }
+

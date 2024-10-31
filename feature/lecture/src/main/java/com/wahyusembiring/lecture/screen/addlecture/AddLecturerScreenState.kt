@@ -26,7 +26,8 @@ sealed class AddLecturerScreenUIEvent {
     data object OnLecturerSavedDialogDismiss : AddLecturerScreenUIEvent()
     data class OnProfilePictureSelected(val uri: Uri?) : AddLecturerScreenUIEvent()
     data class OnNewPhoneNumber(val phoneNumber: String) : AddLecturerScreenUIEvent()
-    data class OnDeletePhoneNumber(val phoneNumber: String) : AddLecturerScreenUIEvent() // Tambahan untuk hapus nomor telepon
+    data class OnDeletePhoneNumber(val phoneNumber: String) : AddLecturerScreenUIEvent()
+    data class OnDeleteEmail(val email: String) : AddLecturerScreenUIEvent()// Tambahan untuk hapus nomor telepon
     data class OnNewEmail(val email: String) : AddLecturerScreenUIEvent()
     data class OnNewAddress(val address: String) : AddLecturerScreenUIEvent()
     data class OnNewOfficeHour(val officeHour: OfficeHour) : AddLecturerScreenUIEvent()

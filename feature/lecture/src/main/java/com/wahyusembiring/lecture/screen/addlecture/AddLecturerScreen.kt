@@ -160,6 +160,9 @@ private fun AddLectureScreen(
                     emails = state.emails,
                     onNewEmail = {
                         onUIEvent(AddLecturerScreenUIEvent.OnNewEmail(it))
+                    },
+                    onDeleteEmail = { email ->
+                        onUIEvent(AddLecturerScreenUIEvent.OnDeleteEmail(email))
                     }
                 )
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.Medium))

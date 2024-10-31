@@ -18,4 +18,5 @@ interface LecturerRepository {
 
     suspend fun deleteLecturer(id: Int) // Menambahkan metode untuk menghapus dosen
 
+    suspend fun deletePhoneNumber(phoneNumber: String) // Menambahkan metode untuk menghapus nomor telepon
 }

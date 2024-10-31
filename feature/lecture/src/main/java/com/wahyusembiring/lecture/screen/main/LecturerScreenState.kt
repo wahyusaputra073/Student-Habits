@@ -9,9 +9,9 @@ data class LecturerScreenUIState(
 
 sealed class LecturerScreenUIEvent {
     data class OnAddLecturerClick(val navController: NavController) : LecturerScreenUIEvent()
-    data class OnLecturerClick(val lecturerWithSubjects: LecturerWithSubject) :
-        LecturerScreenUIEvent()
+    data class OnLecturerClick(val lecturerWithSubjects: LecturerWithSubject) : LecturerScreenUIEvent()
     data class OnDeleteLecturerClick(val lecturerWithSubjects: LecturerWithSubject) : LecturerScreenUIEvent() // Event untuk menghapus lecturer
+    data class OnDeletePhoneNumberClick(val phoneNumber: String) : LecturerScreenUIEvent() // Event untuk menghapus nomor telepon
 }
 
 sealed class LecturerScreenNavigationEvent {

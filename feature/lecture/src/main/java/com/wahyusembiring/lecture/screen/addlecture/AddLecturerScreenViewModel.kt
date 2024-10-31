@@ -3,6 +3,7 @@ package com.wahyusembiring.lecture.screen.addlecture
 import android.app.Application
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -70,7 +71,8 @@ class AddLecturerScreenViewModel @AssistedInject constructor(
             is AddLecturerScreenUIEvent.OnErrorDialogDismiss -> onErrorDialogDismiss()
             is AddLecturerScreenUIEvent.OnProfilePictureSelected -> onProfilePictureSelected(event.uri)
             is AddLecturerScreenUIEvent.OnNewPhoneNumber -> onNewPhoneNumber(event.phoneNumber)
-            is AddLecturerScreenUIEvent.OnDeletePhoneNumber -> onDeletePhoneNumber(event.phoneNumber) // Penanganan hapus nomor telepon
+            is AddLecturerScreenUIEvent.OnDeletePhoneNumber -> onDeletePhoneNumber(event.phoneNumber)
+            is AddLecturerScreenUIEvent.OnDeleteEmail-> onDeleteEmail(event.email)// Penanganan hapus nomor telepon
             is AddLecturerScreenUIEvent.OnNewEmail -> onNewEmail(event.email)
             is AddLecturerScreenUIEvent.OnNewAddress -> onNewAddress(event.address)
             is AddLecturerScreenUIEvent.OnNewOfficeHour -> onNewOfficeHour(event.officeHour)
@@ -87,7 +89,9 @@ class AddLecturerScreenViewModel @AssistedInject constructor(
 
     private fun onNewWebsite(website: String) {
         _state.update {
-            it.copy(websites = it.websites + website)
+            it.copy(
+                websites = it.websites + website
+            )
         }
     }
 
@@ -122,17 +126,25 @@ class AddLecturerScreenViewModel @AssistedInject constructor(
     }
 
     private fun onDeletePhoneNumber(phoneNumber: String) {
-        viewModelScope.launch {
-            onDeletePhoneNumber(phoneNumber) // Panggil fungsi penghapusan dari repositori
-            _state.update {
-                it.copy(
-                    phoneNumbers = it.phoneNumbers.filter { existingPhoneNumber ->
-                        existingPhoneNumber != phoneNumber
-                    }
-                )
-            }
+        _state.update {
+            it.copy(
+                phoneNumbers = it.phoneNumbers.filter { existingPhoneNumber ->
+                    existingPhoneNumber != phoneNumber
+                }
+            )
         }
     }
+
+    private fun onDeleteEmail(email: String) {
+        _state.update {
+            it.copy(
+                emails = it.emails.filter { existingEmail ->
+                    existingEmail != email
+                }
+            )
+        }
+    }
+
 
     private fun onProfilePictureSelected(uri: Uri?) {
         _state.update {

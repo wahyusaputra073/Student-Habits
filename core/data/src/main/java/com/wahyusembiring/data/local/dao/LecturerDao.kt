@@ -33,6 +33,10 @@ interface LecturerDao {
     @Query("DELETE FROM lecturer WHERE id = :lecturerId")
     suspend fun deleteLecturerById(lecturerId: String)
 
+    @Query("DELETE FROM lecturer WHERE phone = :phoneNumber")
+    suspend fun deletePhoneNumber(phoneNumber: String)
+
+
 //    @Query("SELECT * FROM lecturer")
 //    fun getAllLecturerWithSubjects(): Flow<List<LecturerWithSubject>>
 }
