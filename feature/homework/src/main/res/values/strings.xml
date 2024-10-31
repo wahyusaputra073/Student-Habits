@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="close_add_homework_sheet">Close add homework sheet</string>
+    <string name="homework_title">Homework title</string>
+    <string name="save_homework">Save homework</string>
+    <string name="are_you_sure_you_want_to_save_this_homework">Are you sure you want to save this homework?</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="homework_title_is_required">Homework title is required</string>
+    <string name="ok">Ok</string>
+    <string name="due_date_is_required">Due date is required</string>
+    <string name="subject_is_required">Subject is required</string>
+    <string name="success">Success</string>
+    <string name="homework_saved">Homework saved</string>
+    <string name="saving">Saving...</string>
+    <string name="yes">yes</string>
+    <string name="edit">Edit</string>
+    <string name="edit_homework">Edit Homework</string>
+    <string name="are_you_sure_you_want_to_edit_this_homework">Are you sure you want to edit this homework?</string>
+</resources>

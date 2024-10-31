@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="written">Written</string>
+    <string name="oral">Oral</string>
+    <string name="practical">Practical</string>
+    <string name="grades">Grades</string>
+    <string name="you_don_t_have_any_subject">You don\'t have any subject</string>
+    <string name="written_test">Written test</string>
+    <string name="oral_test">Oral test</string>
+    <string name="practical_test">Practical test</string>
+    <string name="homework">Homework</string>
+    <string name="next">Next</string>
+    <string name="no_graded_assignment_for_this_subject">No graded assignment for this subject</string>
+    <string name="new_subject">New subject</string>
+    <string name="no_any_assignment_for_this_subject">No any assignment for this subject</string>
+</resources>

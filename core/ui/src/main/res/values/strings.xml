@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="error">Error</string>
+    <string name="close_pick_attachment">Close Attachment Picker</string>
+    <string name="link">Link</string>
+    <string name="photo">Photo</string>
+    <string name="file">File</string>
+    <string name="more_option">More Option</string>
+    <string name="add_attachment">Add attachment</string>
+    <string name="links">Links</string>
+    <string name="files">Files</string>
+    <string name="pick_date">Pick date</string>
+    <string name="add_date">Add date</string>
+    <string name="add_reminder">Add reminder</string>
+    <string name="remind_me_at">Remind me at</string>
+    <string name="add_subject">Add subject</string>
+    <string name="save">Save</string>
+    <string name="saving">Saving…</string>
+    <string name="add_new_subject">Add new subject</string>
+    <string name="pick_a_subject">Pick a subject</string>
+    <string name="home">Home</string>
+    <string name="kanban">Kanban</string>
+    <string name="calendar">Calendar</string>
+    <string name="thesisplanner">Thesis Planner</string>
+    <string name="grades">Grades</string>
+    <string name="subjects">Subjects</string>
+    <string name="attendance">Attendance</string>
+    <string name="lectures">Lectures</string>
+    <string name="recordings">Recordings</string>
+    <string name="information">Information</string>
+    <string name="settings">Settings</string>
+    <string name="close_color_picker">Close color picker</string>
+    <string name="when_do_you_want_to_be_reminded">When do you want to be reminded?</string>
+    <string name="menu">Menu</string>
+    <string name="written_test">Written Test</string>
+    <string name="oral_test">Oral Test</string>
+    <string name="practical_test">Practical Test</string>
+    <string name="pick_test_category">Pick test category</string>
+    <string name="exam_category">Exam category</string>
+    <string name="color">Color</string>
+    <string name="create_task">Create Task</string>
+    <string name="add_exam_schedule">Add exam schedule</string>
+    <string name="add_homework">Add homework</string>
+    <string name="enter_your_exam_score">Enter your exam score</string>
+    <string name="undone">Undone</string>
+    <string name="done">Done</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="enter_phone_number">Enter phone number</string>
+    <string name="add">Add</string>
+    <string name="email">Email</string>
+    <string name="no_email">No email</string>
+    <string name="enter_email">Enter email</string>
+    <string name="address">Address</string>
+    <string name="no_address">No Address</string>
+    <string name="enter_address">Enter address</string>
+    <string name="office_hour">Office Hour</string>
+    <string name="no_office_hour">No Office Hour</string>
+    <string name="no_phone_number">No phone number</string>
+    <string name="enter_office_hour">Enter Office Hour</string>
+    <string name="no_day_selected">No day selected</string>
+    <string name="office_hour_from_to">From %1$s:%2$s to %3$s:%4$s</string>
+    <string name="day">Day:</string>
+    <string name="from">From:</string>
+    <string name="until">Until:</string>
+    <string name="time_colon">%1$s:%2$s</string>
+    <string name="available_from">Available from</string>
+    <string name="website">Website</string>
+    <string name="no_website">No website</string>
+    <string name="enter_website_link">Enter website link</string>
+    <string name="guest_account">Guest account</string>
+    <string name="you_dont_have_any_task_yet">You dont have any task created yet</string>
+    <string name="event_icon">Event Icon</string>
+    <string name="event_overview">Pending Event</string>
+    <string name="show_more">Show more</string>
+    <string name="new_event">New event</string>
+    <string name="add_new_event">Add new event</string>
+    <string name="today">Today</string>
+    <string name="exam">Exam</string>
+    <string name="overview">Overview</string>
+    <string name="homework">Homework</string>
+    <string name="reminder">Reminder</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="no_event_picture">No event picture</string>
+    <string name="delete">Delete</string>
+    <array name="days">
+        <item>Sunday</item>
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+    </array>
+</resources>

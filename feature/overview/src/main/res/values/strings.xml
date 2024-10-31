@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="you_dont_have_any_task_yet">You dont have any task created yet</string>
+    <string name="event_icon">Event Icon</string>
+    <string name="event_overview">Pending Event</string>
+    <string name="show_more">Show more</string>
+    <string name="new_event">New event</string>
+    <string name="add_new_event">Add new event</string>
+    <string name="today">Today</string>
+    <string name="exam">Exam</string>
+    <string name="overview">Overview</string>
+    <string name="homework">Homework</string>
+    <string name="reminder">Reminder</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="no_event_picture">No event picture</string>
+    <string name="delete">Delete</string>
+    <string name="enter_your_exam_score">Enter your exam score</string>
+    <string name="cancel">Cancel</string>
+    <string name="undone">Undone</string>
+    <string name="done">Done</string>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lectures">Lectures</string>
+    <string name="lecture_name">Lecture name</string>
+    <string name="save_lecture">Save Lecture</string>
+    <string name="are_you_sure_you_want_to_save_this_lecture">Are you sure you want to save this lecture?</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="lecture_name_cannot_be_empty">Lecture name cannot be empty</string>
+    <string name="ok">Ok</string>
+    <string name="lecture_saved">Lecture Saved</string>
+    <string name="no_subject_added">No Subject added</string>
+    <string name="edit">Edit</string>
+    <string name="delete_lecture">Delete Lecture</string>
+</resources>

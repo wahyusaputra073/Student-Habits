@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="subject_name">Subject name</string>
+    <string name="room">Room</string>
+    <string name="subject_name_is_required">Subject name is required</string>
+    <string name="ok">Ok</string>
+    <string name="room_is_required">Room is required</string>
+    <string name="success">Success</string>
+    <string name="subject_saved">Subject saved</string>
+    <string name="saving">Saving...</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="color">Color</string>
+    <string name="back">Back</string>
+    <string name="are_you_sure_you_want_to_save_this_subject">Are you sure you want to save this subject?</string>
+    <string name="save_subject">Save subject</string>
+    <string name="please_select_a_lecture">Please select a lecture</string>
+    <string name="there_are_no_lecturer_selected">there are no lecturer selected</string>
+    <string name="there_are_no_lecturer_avaliable">There are no lecturer avaliable</string>
+    <string name="add_new_lecturer">Add new lecturer</string>
+    <string name="written">Written</string>
+    <string name="oral">Oral</string>
+    <string name="practical">Practical</string>
+    <string name="grades">Grades</string>
+    <string name="you_don_t_have_any_subject">You don\'t have any subject</string>
+    <string name="written_test">Written test</string>
+    <string name="oral_test">Oral test</string>
+    <string name="practical_test">Practical test</string>
+    <string name="homework">Homework</string>
+    <string name="next">Next</string>
+    <string name="no_graded_assignment_for_this_subject">No graded assignment for this subject</string>
+    <string name="new_subject">New subject</string>
+    <string name="no_any_assignment_for_this_subject">No any assignment for this subject</string>
+</resources>
