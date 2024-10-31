@@ -69,7 +69,8 @@ class LecturerService @Inject constructor(
         val document = db
             .collection(USER_COLLECTION_ID)
             .document(user.id)
-            .collection(LECTURER_COLLECTION_ID).document(id.toString()).get().await()
+            .collection(LECTURER_COLLECTION_ID)
+            .document(id.toString()).get().await()
         return document.toLecturer(converter)
     }
 
@@ -78,8 +79,19 @@ class LecturerService @Inject constructor(
         val newLecturer = lecturer.toHashMap(converter)
         db.collection(USER_COLLECTION_ID)
             .document(user.id)
-            .collection(LECTURER_COLLECTION_ID).document(lecturer.id.toString()).set(newLecturer)
+            .collection(LECTURER_COLLECTION_ID)
+            .document(lecturer.id.toString()).set(newLecturer)
             .await()
     }
 
+//    // Fungsi baru untuk menghapus lecturer berdasarkan ID
+//    suspend fun deleteLecturerById(id: Int) {
+//        val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
+//        db.collection(USER_COLLECTION_ID)
+//            .document(user.id)
+//            .collection(LECTURER_COLLECTION_ID)
+//            .document(id.toString())
+//            .delete()
+//            .await()
+//    }
 }

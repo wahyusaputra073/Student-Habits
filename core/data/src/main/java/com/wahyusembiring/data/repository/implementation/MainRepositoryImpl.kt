@@ -39,8 +39,8 @@ class MainRepositoryImpl @Inject constructor(
     override suspend fun syncToLocal(): Flow<Result<Unit>> = flow {
         emit(Result.Loading())
         try {
-            val lecturers = lecturerService.getAllLecturer()
-            lecturerDao.insertLecturer(lecturers)
+            val id = lecturerService.getAllLecturer()
+            lecturerDao.deleteLecturerById(id.toString())
 
             val subjects = subjectService.getAllSubject()
             subjectDao.insertSubject(subjects)
