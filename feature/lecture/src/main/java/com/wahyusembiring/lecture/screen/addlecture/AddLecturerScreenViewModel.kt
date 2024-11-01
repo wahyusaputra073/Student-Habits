@@ -3,7 +3,6 @@ package com.wahyusembiring.lecture.screen.addlecture
 import android.app.Application
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -52,7 +51,8 @@ class AddLecturerScreenViewModel @AssistedInject constructor(
                             phoneNumbers = lecturer?.phone ?: it.phoneNumbers,
                             emails = lecturer?.email ?: it.emails,
                             addresses = lecturer?.address ?: it.addresses,
-                            officeHours = lecturer?.officeHour ?: it.officeHours
+                            officeHours = lecturer?.officeHour ?: it.officeHours,
+                            websites = lecturer?.website ?: it.websites
                         )
                     }
                 }
@@ -72,14 +72,20 @@ class AddLecturerScreenViewModel @AssistedInject constructor(
             is AddLecturerScreenUIEvent.OnProfilePictureSelected -> onProfilePictureSelected(event.uri)
             is AddLecturerScreenUIEvent.OnNewPhoneNumber -> onNewPhoneNumber(event.phoneNumber)
             is AddLecturerScreenUIEvent.OnDeletePhoneNumber -> onDeletePhoneNumber(event.phoneNumber)
+            is AddLecturerScreenUIEvent.OnDeleteAddress -> onDeleteAddress(event.address)
+            is AddLecturerScreenUIEvent.OnDeleteWebsite -> onDeleteWebsite(event.website)
+            is AddLecturerScreenUIEvent.OnDeleteOfficeHour -> onDeleteOfficeHour(event.officeHour)
             is AddLecturerScreenUIEvent.OnDeleteEmail-> onDeleteEmail(event.email)// Penanganan hapus nomor telepon
             is AddLecturerScreenUIEvent.OnNewEmail -> onNewEmail(event.email)
             is AddLecturerScreenUIEvent.OnNewAddress -> onNewAddress(event.address)
             is AddLecturerScreenUIEvent.OnNewOfficeHour -> onNewOfficeHour(event.officeHour)
             is AddLecturerScreenUIEvent.OnNewWebsite -> onNewWebsite(event.website)
             is AddLecturerScreenUIEvent.OnLecturerSavedDialogDismiss -> onLectureSavedDialogDismiss()
+
         }
     }
+
+
 
     private fun onLectureSavedDialogDismiss() {
         _state.update {
@@ -100,6 +106,19 @@ class AddLecturerScreenViewModel @AssistedInject constructor(
             it.copy(officeHours = it.officeHours + officeHour)
         }
     }
+
+    private fun onDeleteOfficeHour(officeHour: OfficeHour) {
+        _state.update {
+            it.copy(
+                officeHours = it.officeHours.filter { existingOfficeHour ->
+                    existingOfficeHour.day != officeHour.day ||
+                            existingOfficeHour.startTime != officeHour.startTime ||
+                            existingOfficeHour.endTime != officeHour.endTime
+                }
+            )
+        }
+    }
+
 
     private fun onNewAddress(address: String) {
         _state.update {
@@ -135,6 +154,16 @@ class AddLecturerScreenViewModel @AssistedInject constructor(
         }
     }
 
+    private fun onDeleteAddress(address: String) {
+        _state.update {
+            it.copy(
+                addresses = it.addresses.filter { existingAddress ->
+                    existingAddress != address
+                }
+            )
+        }
+    }
+
     private fun onDeleteEmail(email: String) {
         _state.update {
             it.copy(
@@ -145,6 +174,17 @@ class AddLecturerScreenViewModel @AssistedInject constructor(
         }
     }
 
+    private fun onDeleteWebsite(website: String) {
+        _state.update {
+            it.copy(
+                websites = it.websites.filter { existingWebsite ->
+                    existingWebsite != website
+                }
+            )
+        }
+    }
+
+    
 
     private fun onProfilePictureSelected(uri: Uri?) {
         _state.update {

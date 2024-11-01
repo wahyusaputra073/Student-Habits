@@ -32,7 +32,7 @@ fun ExamCard(
 ) {
     ListItem(
         modifier = Modifier
-            .clickable { onClick() },
+            .clickable(onClick = onClick),
         leadingContent = {
             Box(
                 modifier = Modifier

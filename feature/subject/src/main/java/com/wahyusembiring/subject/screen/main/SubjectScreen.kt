@@ -39,6 +39,8 @@ import com.wahyusembiring.common.navigation.Screen
 import com.wahyusembiring.subject.R
 import com.wahyusembiring.subject.component.ExamCard
 import com.wahyusembiring.subject.component.HomeworkCard
+import com.wahyusembiring.ui.component.modalbottomsheet.component.AddNewSubject
+import com.wahyusembiring.ui.component.modalbottomsheet.component.SubjectListItem
 import com.wahyusembiring.ui.component.topappbar.TopAppBar
 import com.wahyusembiring.ui.theme.spacing
 import kotlinx.coroutines.launch
@@ -59,15 +61,12 @@ fun SubjectScreen(
                 is SubjectScreenUIEvent.OnHamburgerMenuClick -> {
                     coroutineScope.launch { drawerState.open() }
                 }
-
                 is SubjectScreenUIEvent.OnExamClick -> {
                     navController.navigate(Screen.CreateExam(event.exam.id))
                 }
-
                 is SubjectScreenUIEvent.OnFloatingActionButtonClick -> {
                     navController.navigate(Screen.CreateSubject)
                 }
-
                 else -> viewModel.onUIEvent(event)
             }
         }
@@ -81,22 +80,17 @@ private fun SubjectScreen(
     onUIEvent: (event: SubjectScreenUIEvent) -> Unit
 ) {
     val scrollState = rememberScrollState()
-    var showAssignmentPicker by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = stringResource(R.string.grades),
+                title = stringResource(R.string.subject),
                 onMenuClick = { onUIEvent(SubjectScreenUIEvent.OnHamburgerMenuClick) }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    onUIEvent(SubjectScreenUIEvent.OnFloatingActionButtonClick)
-                }
-            ) {
+            FloatingActionButton(onClick = { onUIEvent(SubjectScreenUIEvent.OnFloatingActionButtonClick) }) {
                 Icon(
                     painter = painterResource(R.drawable.ic_add),
                     contentDescription = null
@@ -107,51 +101,17 @@ private fun SubjectScreen(
         Column(
             modifier = Modifier
                 .padding(scaffoldPadding)
-                .scrollable(
-                    state = scrollState,
-                    orientation = Orientation.Vertical
-                )
+                .scrollable(scrollState, Orientation.Vertical)
         ) {
-            for (subject in state.subjects) {
-                Text(
-                    modifier = Modifier
-                        .padding(
-                            horizontal = MaterialTheme.spacing.Medium,
-                            vertical = MaterialTheme.spacing.Small
-                        ),
-                    text = subject.subject.name,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                HorizontalDivider()
-                for (exam in subject.exams) {
-                    ExamCard(
-                        subject = subject.subject,
-                        exam = exam,
-                        date = exam.date,
-                        onClick = {
-                            onUIEvent(SubjectScreenUIEvent.OnExamClick(exam))
-                        }
-                    )
-                }
-                for (homework in subject.homeworks) {
-                    HomeworkCard(
-                        subject = subject.subject,
-                        homework = homework,
-                        date = homework.dueDate,
-                        onClick = {
-                            onUIEvent(SubjectScreenUIEvent.OnHomeworkClick(homework))
-                        }
-                    )
-                }
-                if (subject.exams.isEmpty() && subject.homeworks.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = stringResource(R.string.no_graded_assignment_for_this_subject))
+            state.subjects.forEach { subject ->
+                SubjectListItem(
+                    subject = subject.subject,
+                    onClicked = { selectedSubject ->
+                        onUIEvent(SubjectScreenUIEvent.OnSubjectClick(selectedSubject))
                     }
-                }
+                )
             }
+
             if (state.subjects.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -175,7 +135,14 @@ private fun SubjectScreen(
                     }
                 }
             }
+
+            AddNewSubject(
+                onClicked = {
+                    onUIEvent(SubjectScreenUIEvent.OnFloatingActionButtonClick)
+                }
+            )
         }
     }
 }
+
 

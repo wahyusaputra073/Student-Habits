@@ -27,8 +27,11 @@ sealed class AddLecturerScreenUIEvent {
     data class OnProfilePictureSelected(val uri: Uri?) : AddLecturerScreenUIEvent()
     data class OnNewPhoneNumber(val phoneNumber: String) : AddLecturerScreenUIEvent()
     data class OnDeletePhoneNumber(val phoneNumber: String) : AddLecturerScreenUIEvent()
-    data class OnDeleteEmail(val email: String) : AddLecturerScreenUIEvent()// Tambahan untuk hapus nomor telepon
+    data class OnDeleteEmail(val email: String) : AddLecturerScreenUIEvent()
+    data class OnDeleteAddress(val address: String) : AddLecturerScreenUIEvent()
+    data class OnDeleteWebsite(val website: String) : AddLecturerScreenUIEvent()// Tambahan untuk hapus nomor telepon
     data class OnNewEmail(val email: String) : AddLecturerScreenUIEvent()
+    data class OnDeleteOfficeHour(val officeHour: OfficeHour) : AddLecturerScreenUIEvent()
     data class OnNewAddress(val address: String) : AddLecturerScreenUIEvent()
     data class OnNewOfficeHour(val officeHour: OfficeHour) : AddLecturerScreenUIEvent()
     data class OnNewWebsite(val website: String) : AddLecturerScreenUIEvent()

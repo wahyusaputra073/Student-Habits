@@ -172,28 +172,41 @@ private fun AddLectureScreen(
                     addresses = state.addresses,
                     onNewAddress = {
                         onUIEvent(AddLecturerScreenUIEvent.OnNewAddress(it))
+                    },
+                    onDeleteAddress = { address ->
+                        onUIEvent(AddLecturerScreenUIEvent.OnDeleteAddress(address))
                     }
                 )
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.Medium))
             }
-            item {
-                OfficeHourInput(
-                    officeHours = state.officeHours,
-                    onNewOfficeHour = {
-                        onUIEvent(AddLecturerScreenUIEvent.OnNewOfficeHour(it))
-                    }
-                )
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.Medium))
-            }
+
             item {
                 WebsiteInput(
                     websites = state.websites,
                     onNewWebsiteAddClick = {
                         onUIEvent(AddLecturerScreenUIEvent.OnNewWebsite(it))
+                    },
+                    onDeleteWebsite = { website ->
+                        onUIEvent(AddLecturerScreenUIEvent.OnDeleteWebsite(website))
                     }
                 )
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.Large))
             }
+
+            item {
+                OfficeHourInput(
+                    officeHours = state.officeHours,
+                    onNewOfficeHour = {
+                        onUIEvent(AddLecturerScreenUIEvent.OnNewOfficeHour(it))
+                    },
+                    onDeleteOfficeHour = { officeHour ->
+                        onUIEvent(AddLecturerScreenUIEvent.OnDeleteOfficeHour(officeHour))
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.Medium))
+            }
+
         }
     }
     if (state.showSaveConfirmationDialog) {

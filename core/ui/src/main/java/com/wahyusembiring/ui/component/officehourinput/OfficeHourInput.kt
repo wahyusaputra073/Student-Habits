@@ -13,8 +13,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +52,7 @@ fun OfficeHourInput(
     modifier: Modifier = Modifier,
     officeHours: List<OfficeHour>,
     onNewOfficeHour: (OfficeHour) -> Unit,
+    onDeleteOfficeHour: (OfficeHour) -> Unit
 ) {
     var showOfficeHourDialog by remember { mutableStateOf(false) }
 
@@ -85,7 +89,8 @@ fun OfficeHourInput(
             }
             for (officeHour in officeHours) {
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.Small))
-                OfficeHourListItem(officeHour = officeHour)
+                OfficeHourListItem(officeHour = officeHour,
+                    onDeleteClick = { onDeleteOfficeHour(officeHour)})
             }
         }
     }
@@ -100,8 +105,10 @@ fun OfficeHourInput(
 
 @Composable
 private fun OfficeHourListItem(
-    officeHour: OfficeHour
+    officeHour: OfficeHour,
+    onDeleteClick: () -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
     val days = stringArrayResource(id = R.array.days)
 
     Row(
@@ -132,6 +139,32 @@ private fun OfficeHourListItem(
                     officeHour.endTime.minute
                 )
             )
+        }
+
+        Box {
+            IconButton(
+                onClick = { expanded = true },
+                modifier = Modifier.size(24.dp) // Ukuran ikon titik tiga
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_more_vertical),
+                    contentDescription = "Options",
+                    tint = MaterialTheme.colorScheme.secondary // Menggunakan warna yang sama dengan ikon kontak
+                )
+            }
+            // Dropdown menu
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Delete") },
+                    onClick = {
+                        onDeleteClick()
+                        expanded = false // Menutup dropdown setelah klik
+                    }
+                )
+            }
         }
     }
 }

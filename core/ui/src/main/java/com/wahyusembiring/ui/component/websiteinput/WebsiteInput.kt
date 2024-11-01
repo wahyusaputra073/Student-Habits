@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import com.wahyusembiring.ui.R
 import com.wahyusembiring.ui.theme.spacing
 
@@ -42,6 +46,7 @@ fun WebsiteInput(
     modifier: Modifier = Modifier,
     websites: List<String>,
     onNewWebsiteAddClick: (String) -> Unit,
+    onDeleteWebsite: (String) -> Unit
 ) {
     var showWebsiteDialog by remember { mutableStateOf(false) }
 
@@ -78,7 +83,8 @@ fun WebsiteInput(
             }
             for (website in websites) {
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.Small))
-                WebsiteListItem(website = website)
+                WebsiteListItem(website = website,
+                    onDeleteClick = { onDeleteWebsite(website) })
             }
         }
     }
@@ -93,8 +99,11 @@ fun WebsiteInput(
 
 @Composable
 private fun WebsiteListItem(
-    website: String
+    website: String,
+    onDeleteClick: () -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier.requiredHeight(IntrinsicSize.Min),
         horizontalArrangement = Arrangement.Start,
@@ -113,6 +122,32 @@ private fun WebsiteListItem(
         Text(
             text = website
         )
+
+        Box {
+            IconButton(
+                onClick = { expanded = true },
+                modifier = Modifier.size(24.dp) // Ukuran ikon titik tiga
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_more_vertical),
+                    contentDescription = "Options",
+                    tint = MaterialTheme.colorScheme.secondary // Menggunakan warna yang sama dengan ikon kontak
+                )
+            }
+            // Dropdown menu
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Delete") },
+                    onClick = {
+                        onDeleteClick()
+                        expanded = false // Menutup dropdown setelah klik
+                    }
+                )
+            }
+        }
     }
 }
 

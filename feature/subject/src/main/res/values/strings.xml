@@ -21,7 +21,7 @@
     <string name="written">Written</string>
     <string name="oral">Oral</string>
     <string name="practical">Practical</string>
-    <string name="grades">Grades</string>
+    <string name="subject">Subject</string>
     <string name="you_don_t_have_any_subject">You don\'t have any subject</string>
     <string name="written_test">Written test</string>
     <string name="oral_test">Oral test</string>

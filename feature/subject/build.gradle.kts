@@ -12,4 +12,5 @@ dependencies {
     // Coil
     implementation(libs.coil.compose)
     implementation(libs.coil.svg)
+    implementation(project(":feature:lecture"))
 }

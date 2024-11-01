@@ -12,9 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,6 +50,7 @@ fun MultiAddressInput(
     modifier: Modifier = Modifier,
     addresses: List<String>,
     onNewAddress: (String) -> Unit,
+    onDeleteAddress: (String) -> Unit
 ) {
     var showAddressDialog by remember { mutableStateOf(false) }
 
@@ -85,7 +89,8 @@ fun MultiAddressInput(
             }
             for (address in addresses) {
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.Small))
-                AddressListItem(address = address)
+                AddressListItem(address = address,
+                    onDeleteClick = { onDeleteAddress(address) })
             }
         }
     }
@@ -100,8 +105,11 @@ fun MultiAddressInput(
 
 @Composable
 private fun AddressListItem(
-    address: String
+    address: String,
+    onDeleteClick: () -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -126,6 +134,32 @@ private fun AddressListItem(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
+
+        Box {
+            IconButton(
+                onClick = { expanded = true },
+                modifier = Modifier.size(24.dp) // Ukuran ikon titik tiga
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_more_vertical),
+                    contentDescription = "Options",
+                    tint = MaterialTheme.colorScheme.secondary // Menggunakan warna yang sama dengan ikon kontak
+                )
+            }
+            // Dropdown menu
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Delete") },
+                    onClick = {
+                        onDeleteClick()
+                        expanded = false // Menutup dropdown setelah klik
+                    }
+                )
+            }
+        }
     }
 }
 
