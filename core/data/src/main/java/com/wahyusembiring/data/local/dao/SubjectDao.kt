@@ -5,9 +5,11 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import androidx.room.Upsert
 import com.wahyusembiring.data.model.SubjectWithExam
 import com.wahyusembiring.data.model.SubjectWithExamAndHomework
+import com.wahyusembiring.data.model.SubjectWithLecturer
 import com.wahyusembiring.data.model.entity.Subject
 import kotlinx.coroutines.flow.Flow
 
@@ -18,11 +20,21 @@ interface SubjectDao {
     @Query("SELECT * FROM subject")
     fun getAllSubject(): Flow<List<Subject>>
 
+    @Query("SELECT * FROM subject WHERE id = :id")
+    fun getSubjectById(id: Int): Flow<Subject?>
+
+    @Transaction
+    @Query("SELECT * FROM subject WHERE id = :id")
+    fun getSubjectWithLecturerById(id: Int): Flow<SubjectWithLecturer?>
+
     @Insert(entity = Subject::class)
     suspend fun insertSubject(subject: Subject): Long
 
     @Insert(entity = Subject::class, onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertSubject(subjects: List<Subject>): List<Long>
+
+    @Update(entity = Subject::class)
+    suspend fun updateSubject(subject: Subject)
 
     @Transaction
     @Query("SELECT * FROM subject")

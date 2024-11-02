@@ -52,7 +52,7 @@ fun CreateSubjectScreen(
             navController.navigateUp()
         },
         onNavigateToCreateLecturer = {
-            navController.navigate(Screen.AddLecturer)
+            navController.navigate(Screen.AddLecturer())
         }
     )
 }
@@ -123,7 +123,7 @@ private fun CreateSubjectScreen(
                     onClick = { onUIEvent(CreateSubjectScreenUIEvent.OnPickColorButtonClicked) }
                 )
                 Dropdown(
-                    items = state.lectures,
+                    items = state.lecturers,
                     title = {
                         if (it?.name != null) {
                             UIText.DynamicString(it.name)
@@ -131,7 +131,7 @@ private fun CreateSubjectScreen(
                             UIText.StringResource(R.string.there_are_no_lecturer_selected)
                         }
                     },
-                    selected = state.lecture,
+                    selected = state.lecturer,
                     onItemClick = {
                         onUIEvent(CreateSubjectScreenUIEvent.OnLecturerSelected(it))
                     },

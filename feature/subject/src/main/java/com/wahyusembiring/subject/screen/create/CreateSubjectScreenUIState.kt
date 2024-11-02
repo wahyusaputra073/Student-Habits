@@ -6,12 +6,13 @@ import com.wahyusembiring.ui.theme.primaryLight
 import com.wahyusembiring.ui.util.UIText
 
 data class CreateSubjectScreenUIState(
+    val isEditMode: Boolean = false,
     val name: String = "",
     val color: Color = primaryLight,
     val room: String = "",
     val description: String = "",
-    val lecture: Lecturer? = null,
-    val lectures: List<Lecturer> = emptyList(),
+    val lecturer: Lecturer? = null,
+    val lecturers: List<Lecturer> = emptyList(),
 
     //popup
     val showColorPicker: Boolean = false,

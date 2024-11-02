@@ -3,33 +3,62 @@ package com.wahyusembiring.subject.screen.create
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wahyusembiring.common.util.launch
 import com.wahyusembiring.data.model.entity.Lecturer
 import com.wahyusembiring.data.model.entity.Subject
 import com.wahyusembiring.data.repository.LecturerRepository
 import com.wahyusembiring.data.repository.SubjectRepository
 import com.wahyusembiring.subject.R
 import com.wahyusembiring.ui.util.UIText
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class CreateSubjectViewModel @Inject constructor(
+@HiltViewModel(
+    assistedFactory = CreateSubjectViewModel.Factory::class,
+)
+class CreateSubjectViewModel @AssistedInject constructor(
     private val subjectRepository: SubjectRepository,
-    private val lecturerRepository: LecturerRepository
+    private val lecturerRepository: LecturerRepository,
+    @Assisted private val subjectId: Int
 ) : ViewModel() {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(subjectId: Int = -1): CreateSubjectViewModel
+    }
 
     private val _state = MutableStateFlow(CreateSubjectScreenUIState())
     val state = _state.asStateFlow()
 
     init {
+        if (subjectId != -1) {
+            _state.update { it.copy(isEditMode = true) }
+        }
         viewModelScope.launch {
-            lecturerRepository.getAllLecturer().collect { lectures ->
-                _state.update { it.copy(lectures = lectures) }
+            launch {
+                lecturerRepository.getAllLecturer().collect { lectures ->
+                    _state.update { it.copy(lecturers = lectures) }
+                }
+            }
+            launch {
+                if (subjectId != -1) {
+                    subjectRepository.getSubjectWithLecturerById(subjectId).collect { subjectWithLecturer ->
+                        _state.update {
+                            it.copy(
+                                name = subjectWithLecturer?.subject?.name ?: "",
+                                color = subjectWithLecturer?.subject?.color ?: Color.Unspecified,
+                                room = subjectWithLecturer?.subject?.room ?: "",
+                                description = subjectWithLecturer?.subject?.description ?: "",
+                                lecturer = subjectWithLecturer?.lecturer,
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -71,7 +100,7 @@ class CreateSubjectViewModel @Inject constructor(
     }
 
     private fun onLecturerSelected(lecturer: Lecturer) {
-        _state.update { it.copy(lecture = lecturer) }
+        _state.update { it.copy(lecturer = lecturer) }
     }
 
     private fun onPickColorButtonClicked() {
@@ -109,9 +138,13 @@ class CreateSubjectViewModel @Inject constructor(
             color = _state.value.color,
             room = _state.value.room.ifBlank { throw MissingRequiredFieldException.Room() },
             description = _state.value.description,
-            lecturerId = _state.value.lecture?.id ?: throw MissingRequiredFieldException.Lecture()
+            lecturerId = _state.value.lecturer?.id ?: throw MissingRequiredFieldException.Lecture()
         )
-        subjectRepository.saveSubject(subject)
+        if (state.value.isEditMode) {
+            subjectRepository.updateSubject(subject.copy(id = subjectId))
+        } else {
+            subjectRepository.saveSubject(subject)
+        }
     }
 
     private fun handleMissingFieldException(e: MissingRequiredFieldException) {
