@@ -27,7 +27,7 @@ sealed class Screen {
     data class CreateExam(val examId: Int = -1) : Screen()
 
     @Serializable
-    data object CreateSubject : Screen()
+    data class CreateSubject(val subjectId: Int = -1) : Screen()
 
     @Serializable
     data object ThesisSelection : Screen()

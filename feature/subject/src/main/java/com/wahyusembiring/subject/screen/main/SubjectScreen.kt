@@ -36,6 +36,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.imageLoader
 import com.wahyusembiring.common.navigation.Screen
+import com.wahyusembiring.common.util.CollectAsOneTimeEvent
 import com.wahyusembiring.subject.R
 import com.wahyusembiring.subject.component.ExamCard
 import com.wahyusembiring.subject.component.HomeworkCard
@@ -53,6 +54,14 @@ fun SubjectScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
+
+    CollectAsOneTimeEvent(viewModel.navigationEvent) {
+        when (it) {
+            is SubjectScreenNavigationEvent.NavigateToSubjectDetail -> {
+                navController.navigate(Screen.CreateSubject(it.subject.id))
+            }
+        }
+    }
 
     SubjectScreen(
         state = state,

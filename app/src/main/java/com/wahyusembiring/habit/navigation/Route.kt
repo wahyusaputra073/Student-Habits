@@ -73,7 +73,13 @@ fun NavGraphBuilder.createSubjectScreen(
     navController: NavHostController
 ) {
     composable<Screen.CreateSubject> {
-        val viewModel: CreateSubjectViewModel = hiltViewModel(it)
+        val subjectId = it.toRoute<Screen.CreateSubject>().subjectId
+        val viewModel: CreateSubjectViewModel = hiltViewModel(
+            viewModelStoreOwner = it,
+            creationCallback = { factory: CreateSubjectViewModel.Factory ->
+                factory.create(subjectId)
+            }
+        )
         CreateSubjectScreen(
             viewModel = viewModel,
             navController = navController

@@ -11,3 +11,7 @@ sealed class SubjectScreenUIEvent {
     data object OnFloatingActionButtonClick : SubjectScreenUIEvent()
     data class OnSubjectClick(val subject: Subject) : SubjectScreenUIEvent()
 }
+
+sealed class SubjectScreenNavigationEvent {
+    data class NavigateToSubjectDetail(val subject: Subject) : SubjectScreenNavigationEvent()
+}
