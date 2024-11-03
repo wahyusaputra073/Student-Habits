@@ -3,6 +3,8 @@ package com.wahyusembiring.data.repository.implementation
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.util.Log
+import androidx.activity.result.ActivityResultRegistryOwner
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
@@ -10,7 +12,10 @@ import androidx.credentials.PasswordCredential
 import androidx.credentials.PublicKeyCredential
 import androidx.credentials.exceptions.GetCredentialException
 import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
 import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -54,17 +59,41 @@ class AuthRepositoryImpl @Inject constructor(
         awaitClose { Firebase.auth.removeAuthStateListener(listener) }
     }
 
-    override fun signInWithFacebook(activity: Activity): Flow<Result<User>> {
-//        val callbackManager = CallbackManager.Factory.create()
-//        val loginManager = LoginManager.getInstance()
-//        val permissions = listOf("email", "public_profile")
-//
-//        loginManager.logIn(
-//            activityResultRegistryOwner = ,
-//            callbackManager = callbackManager,
-//            permissions = permissions
-//        )
-        return flow { }
+    override fun signInWithFacebook(activityResultRegistryOwner: ActivityResultRegistryOwner): Flow<Result<User>> {
+        val callbackManager = CallbackManager.Factory.create()
+        val loginManager = LoginManager.getInstance()
+        val permissions = listOf("email", "public_profile")
+
+        return callbackFlow {
+            trySend(Result.Loading())
+
+            try {
+                loginManager.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+                    override fun onCancel() {
+                        trySend(Result.Error(Exception("Facebook login canceled")))
+                    }
+
+                    override fun onError(error: FacebookException) {
+                        trySend(Result.Error(error))
+                    }
+
+                    override fun onSuccess(result: LoginResult) {
+                        Log.d(TAG, "onSuccess: ${result.accessToken.token}")
+                    }
+                })
+                LoginManager.getInstance().logIn(
+                    activityResultRegistryOwner,
+                    callbackManager,
+                    permissions
+                )
+            } catch (exception: Exception) {
+                trySend(Result.Error(exception))
+            }
+
+            awaitClose {
+                loginManager.unregisterCallback(callbackManager)
+            }
+        }
     }
 
     override fun signInAnonymously(): Flow<Result<User>> {

@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.Context
 import android.net.http.HttpException
 import android.util.Log
+import androidx.activity.result.ActivityResultRegistryOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wahyusembiring.data.Result
@@ -59,7 +60,7 @@ class LoginScreenViewModel @Inject constructor(
             is LoginScreenUIEvent.OnPasswordChange -> onPasswordChange(event.password)
             is LoginScreenUIEvent.OnPopupDismissRequest -> onPopupDismissRequest(event.popUp)
             is LoginScreenUIEvent.OnLoginSkipButtonClick -> onLoginSkipButtonClick()
-            is LoginScreenUIEvent.OnLoginWithFacebookButtonClick -> onLoginWithFacebookButtonClick()
+            is LoginScreenUIEvent.OnLoginWithFacebookButtonClick -> onLoginWithFacebookButtonClick(event.activityResultRegistryOwner)
             is LoginScreenUIEvent.OnLoginWithGoogleButtonClick -> onLoginWithGoogleButtonClick(event.context)
             is LoginScreenUIEvent.OnRegisterHereButtonClick -> {}
         }
@@ -98,8 +99,17 @@ class LoginScreenViewModel @Inject constructor(
         }
     }
 
-    private fun onLoginWithFacebookButtonClick() {
+    private fun onLoginWithFacebookButtonClick(activityResultRegistryOwner: ActivityResultRegistryOwner?) {
+        if (activityResultRegistryOwner == null) {
+            Log.e(TAG, "Attempt to login with facebook but activity result registry owner is null")
+            return
+        }
+        val result = authRepository.signInWithFacebook(activityResultRegistryOwner)
+        viewModelScope.launch {
+            result.collect {
 
+            }
+        }
     }
 
     private fun onLoginWithGoogleButtonClick(context: Context) {
@@ -129,7 +139,6 @@ class LoginScreenViewModel @Inject constructor(
                         _state.update {
                             it.copy(popUpStack = it.popUpStack - LoginScreenPopUp.SignInLoading)
                         }
-//                        _navigationEvent.send(LoginScreenNavigationEvent.NavigateToHomeScreen)
                     }
                 }
             }
