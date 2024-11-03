@@ -62,8 +62,12 @@ class LoginScreenViewModel @Inject constructor(
             is LoginScreenUIEvent.OnLoginSkipButtonClick -> onLoginSkipButtonClick()
             is LoginScreenUIEvent.OnLoginWithFacebookButtonClick -> onLoginWithFacebookButtonClick(event.activityResultRegistryOwner)
             is LoginScreenUIEvent.OnLoginWithGoogleButtonClick -> onLoginWithGoogleButtonClick(event.context)
-            is LoginScreenUIEvent.OnRegisterHereButtonClick -> {}
+            is LoginScreenUIEvent.OnRegisterHereButtonClick -> onRegisterHereButtonClick()
         }
+    }
+
+    private fun onRegisterHereButtonClick() {
+        _navigationEvent.trySend(LoginScreenNavigationEvent.NavigateToRegisterScreen)
     }
 
     private fun onLoginSkipButtonClick() {

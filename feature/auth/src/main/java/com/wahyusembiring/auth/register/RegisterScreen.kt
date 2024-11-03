@@ -1,4 +1,4 @@
-package com.wahyusembiring.auth.login
+package com.wahyusembiring.auth.register
 
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.compose.foundation.Image
@@ -34,80 +34,85 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.wahyusembiring.auth.R
+import com.wahyusembiring.auth.login.LoginScreenUIEvent
 import com.wahyusembiring.common.navigation.Screen
 import com.wahyusembiring.common.util.CollectAsOneTimeEvent
 import com.wahyusembiring.ui.component.popup.alertdialog.error.ErrorAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.information.InformationAlertDialog
 import com.wahyusembiring.ui.component.popup.alertdialog.loading.LoadingAlertDialog
-import com.wahyusembiring.ui.theme.HabitTheme
 import com.wahyusembiring.ui.theme.spacing
 
 @Composable
-fun LoginScreen(
-    viewModel: LoginScreenViewModel,
+fun RegisterScreen(
+    viewModel: RegisterScreenViewModel,
     navController: NavController
 ) {
 
     val state by viewModel.state.collectAsState()
 
-    CollectAsOneTimeEvent(viewModel.navigationEvent) {
-        when (it) {
-            is LoginScreenNavigationEvent.NavigateToHomeScreen -> {
-                navController.navigate(Screen.Overview) {
-                    popUpTo(navController.graph.id)
-                }
-            }
-
-            LoginScreenNavigationEvent.NavigateToRegisterScreen -> {
-                navController.navigate(Screen.Register) {
+    CollectAsOneTimeEvent(viewModel.navigationEvent) { navigationEvent ->
+        when (navigationEvent) {
+            RegisterScreenNavigationEvent.NavigateToLogin -> {
+                navController.navigate(Screen.Login) {
+                    popUpTo(Screen.Login) {
+                        inclusive = true
+                    }
                     launchSingleTop = true
                 }
             }
         }
     }
 
-    LoginScreen(
+    RegisterScreen(
         state = state,
-        onUIEvent = viewModel::onUIEvent,
+        onEvent = viewModel::onEvent
     )
 
-    for (popUp in state.popUpStack) {
+    for (popUp in state.popUps) {
         when (popUp) {
-            is LoginScreenPopUp.SignInLoading -> {
-                LoadingAlertDialog(message = stringResource(R.string.logging_in))
-            }
-
-            is LoginScreenPopUp.SignInFailed -> {
-                ErrorAlertDialog(
-                    message = stringResource(R.string.login_failed),
-                    buttonText = stringResource(R.string.ok),
-                    onDismissRequest = {
-                        viewModel.onUIEvent(LoginScreenUIEvent.OnPopupDismissRequest(popUp))
-                    },
+            is RegisterScreenPopUp.UserCreated -> {
+                InformationAlertDialog(
+                    title = stringResource(R.string.success),
+                    message = stringResource(R.string.user_created_successfully),
+                    buttonText = stringResource(R.string.login),
                     onButtonClicked = {
-                        viewModel.onUIEvent(LoginScreenUIEvent.OnPopupDismissRequest(popUp))
+                        viewModel.onEvent(RegisterScreenEvent.ToLoginScreenButtonClicked)
                     },
+                    onDismissRequest = {
+                        viewModel.onEvent(RegisterScreenEvent.DismissPopUp(popUp))
+                    }
                 )
             }
 
-            LoginScreenPopUp.CommonLoading -> {
-                LoadingAlertDialog(message = "")
+            is RegisterScreenPopUp.Error -> {
+                ErrorAlertDialog(
+                    message = popUp.errorMessage,
+                    buttonText = stringResource(R.string.ok),
+                    onButtonClicked = {
+                        viewModel.onEvent(RegisterScreenEvent.DismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onEvent(RegisterScreenEvent.DismissPopUp(popUp))
+                    }
+                )
+            }
+
+            RegisterScreenPopUp.Loading -> {
+                LoadingAlertDialog(stringResource(R.string.loading))
             }
         }
     }
-
 }
 
 @Composable
-fun LoginScreen(
-    state: LoginScreenUIState,
-    onUIEvent: (LoginScreenUIEvent) -> Unit,
+private fun RegisterScreen(
+    state: RegisterScreenState,
+    onEvent: (RegisterScreenEvent) -> Unit
 ) {
-
     val context = LocalContext.current
     val activityResultRegistryOwner = LocalActivityResultRegistryOwner.current
 
@@ -124,11 +129,11 @@ fun LoginScreen(
                     .padding(MaterialTheme.spacing.Large)
                     .zIndex(2f),
                 onClick = {
-                    onUIEvent(LoginScreenUIEvent.OnLoginSkipButtonClick)
+                    onEvent(RegisterScreenEvent.LoginAsGuestButtonClicked)
                 }
             ) {
                 Text(
-                    text = "Lewati"
+                    text = stringResource(R.string.skip)
                 )
             }
             ElevatedCard(
@@ -146,7 +151,7 @@ fun LoginScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = stringResource(R.string.sign_in),
+                        text = stringResource(R.string.create_new_account),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(MaterialTheme.spacing.Medium, MaterialTheme.spacing.Large),
@@ -154,7 +159,7 @@ fun LoginScreen(
                         style = MaterialTheme.typography.headlineMedium
                     )
                     Text(
-                        text = stringResource(R.string.sign_in_with_an_existing_account_or_skip_to_signing_in_as_a_guest),
+                        text = stringResource(R.string.creating_a_new_account_or_skip_to_signing_in_as_a_guest),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = MaterialTheme.spacing.Medium),
@@ -167,7 +172,7 @@ fun LoginScreen(
                             .padding(MaterialTheme.spacing.Medium),
                         value = state.email,
                         onValueChange = {
-                            onUIEvent(LoginScreenUIEvent.OnEmailChange(it))
+                            onEvent(RegisterScreenEvent.EmailChanged(it))
                         },
                         label = { Text(text = stringResource(R.string.email)) },
                         keyboardOptions = KeyboardOptions(
@@ -182,9 +187,25 @@ fun LoginScreen(
                             .padding(horizontal = MaterialTheme.spacing.Medium),
                         value = state.password,
                         onValueChange = {
-                            onUIEvent(LoginScreenUIEvent.OnPasswordChange(it))
+                            onEvent(RegisterScreenEvent.PasswordChanged(it))
                         },
                         label = { Text(text = stringResource(R.string.password)) },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password
+                        ),
+                        maxLines = 1,
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                    )
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = MaterialTheme.spacing.Medium),
+                        value = state.password,
+                        onValueChange = {
+                            onEvent(RegisterScreenEvent.ConfirmedPasswordChanged(it))
+                        },
+                        label = { Text(text = stringResource(R.string.re_enter_password)) },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Password
                         ),
@@ -195,10 +216,10 @@ fun LoginScreen(
                     Button(
                         modifier = Modifier.padding(vertical = MaterialTheme.spacing.Large),
                         onClick = {
-                            onUIEvent(LoginScreenUIEvent.OnLoginButtonClick)
+                            onEvent(RegisterScreenEvent.RegisterButtonClicked)
                         },
                     ) {
-                        Text(text = stringResource(R.string.sign_in))
+                        Text(text = stringResource(R.string.create_account))
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -224,11 +245,7 @@ fun LoginScreen(
                             modifier = Modifier
                                 .size(48.dp)
                                 .clickable {
-                                    onUIEvent(
-                                        LoginScreenUIEvent.OnLoginWithGoogleButtonClick(
-                                            context
-                                        )
-                                    )
+                                    onEvent(RegisterScreenEvent.LoginWithGoogleButtonClicked(context))
                                 },
                             painter = painterResource(id = R.drawable.google),
                             contentDescription = stringResource(R.string.google)
@@ -238,8 +255,8 @@ fun LoginScreen(
                             modifier = Modifier
                                 .size(48.dp)
                                 .clickable {
-                                    onUIEvent(
-                                        LoginScreenUIEvent.OnLoginWithFacebookButtonClick(
+                                    onEvent(
+                                        RegisterScreenEvent.LoginWithFacebookButtonClicked(
                                             activityResultRegistryOwner
                                         )
                                     )
@@ -254,16 +271,16 @@ fun LoginScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(R.string.don_t_have_an_account_yet),
+                            text = stringResource(R.string.already_have_an_account),
                             style = MaterialTheme.typography.bodySmall
                         )
                         TextButton(
                             onClick = {
-                                onUIEvent(LoginScreenUIEvent.OnRegisterHereButtonClick)
+                                onEvent(RegisterScreenEvent.ToLoginScreenButtonClicked)
                             }
                         ) {
                             Text(
-                                text = stringResource(R.string.sign_up_here),
+                                text = stringResource(R.string.login_here),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -272,16 +289,5 @@ fun LoginScreen(
                 }
             }
         }
-    }
-}
-
-@Preview
-@Composable
-private fun LoginScreenPreview() {
-    HabitTheme {
-        LoginScreen(
-            state = LoginScreenUIState(),
-            onUIEvent = {}
-        )
     }
 }

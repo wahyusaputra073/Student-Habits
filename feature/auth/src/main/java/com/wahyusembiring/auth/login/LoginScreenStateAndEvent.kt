@@ -24,6 +24,7 @@ sealed class LoginScreenUIEvent {
 
 sealed class LoginScreenNavigationEvent {
     data object NavigateToHomeScreen : LoginScreenNavigationEvent()
+    data object NavigateToRegisterScreen : LoginScreenNavigationEvent()
 }
 
 sealed class LoginScreenPopUp {
