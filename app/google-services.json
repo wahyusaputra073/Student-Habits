@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "263007498597",
+    "project_id": "habit-76f0f",
+    "storage_bucket": "habit-76f0f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:263007498597:android:3d4f02ccc7fe9db20eb18c",
+        "android_client_info": {
+          "package_name": "com.wahyusembiring.habit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "263007498597-dva7keobiqb486jdefehj3oqn2br7rki.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wahyusembiring.habit",
+            "certificate_hash": "1ecacd7b6fee1df7e29f7840cd161df03ab5f588"
+          }
+        },
+        {
+          "client_id": "263007498597-j1ugeprd1k4t3cvt3dc51emporv9213b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrrSciYMxQqkT91TtcUlmJlD0NzSZq5NA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "263007498597-j1ugeprd1k4t3cvt3dc51emporv9213b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
