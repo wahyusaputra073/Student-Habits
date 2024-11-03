@@ -1,5 +1,6 @@
 package com.wahyusembiring.auth.login
 
+import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -102,6 +103,7 @@ fun LoginScreen(
 ) {
 
     val context = LocalContext.current
+    val activityResultRegistryOwner = LocalActivityResultRegistryOwner.current
 
     Scaffold { scaffoldPadding ->
         Box(
@@ -230,7 +232,11 @@ fun LoginScreen(
                             modifier = Modifier
                                 .size(48.dp)
                                 .clickable {
-                                    onUIEvent(LoginScreenUIEvent.OnLoginWithFacebookButtonClick)
+                                    onUIEvent(
+                                        LoginScreenUIEvent.OnLoginWithFacebookButtonClick(
+                                            activityResultRegistryOwner
+                                        )
+                                    )
                                 },
                             painter = painterResource(id = R.drawable.facebook),
                             contentDescription = stringResource(R.string.facebook)

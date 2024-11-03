@@ -55,7 +55,7 @@ fun ExamScreen(
             navController.navigateUp()
         },
         onNavigateToCreateSubjectScreen = {
-            navController.navigate(Screen.CreateExam())
+            navController.navigate(Screen.CreateSubject())
         }
     )
 }

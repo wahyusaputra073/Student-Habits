@@ -74,7 +74,7 @@ fun SubjectScreen(
                     navController.navigate(Screen.CreateExam(event.exam.id))
                 }
                 is SubjectScreenUIEvent.OnFloatingActionButtonClick -> {
-                    navController.navigate(Screen.CreateSubject)
+                    navController.navigate(Screen.CreateSubject())
                 }
                 else -> viewModel.onUIEvent(event)
             }

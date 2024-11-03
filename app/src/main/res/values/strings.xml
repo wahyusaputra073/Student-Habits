@@ -1,8 +1,9 @@
 <resources>
 
-    <string name="facebook_app_id">496805646694991</string>
-    <string name="fb_login_protocol_scheme">fb1234</string>
-    <string name="facebook_client_token">a19d072c40b48f6ddfae25276c7105e7</string>
+    <string name="facebook_app_id" translatable="false">832472828813200</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fb832472828813200</string>
+    <string name="facebook_client_token" translatable="false">50612bbb1e475bad7ca9d2f73a95650d</string>
+    <string name="fb_authority" translatable="false">com.facebook.app.FacebookContentProvider832472828813200</string>
 
 
     <string name="app_name">Habit</string>

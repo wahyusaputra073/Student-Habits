@@ -2,6 +2,7 @@ package com.wahyusembiring.auth.login
 
 import android.app.Activity
 import android.content.Context
+import androidx.activity.result.ActivityResultRegistryOwner
 
 
 data class LoginScreenUIState(
@@ -17,7 +18,7 @@ sealed class LoginScreenUIEvent {
     data class OnPopupDismissRequest(val popUp: LoginScreenPopUp) : LoginScreenUIEvent()
     data object OnLoginSkipButtonClick : LoginScreenUIEvent()
     data class OnLoginWithGoogleButtonClick(val context: Context) : LoginScreenUIEvent()
-    data object OnLoginWithFacebookButtonClick : LoginScreenUIEvent()
+    data class OnLoginWithFacebookButtonClick(val activityResultRegistryOwner: ActivityResultRegistryOwner?) : LoginScreenUIEvent()
     data object OnRegisterHereButtonClick : LoginScreenUIEvent()
 }
 
@@ -30,5 +31,3 @@ sealed class LoginScreenPopUp {
     data object SignInFailed : LoginScreenPopUp()
     data object CommonLoading : LoginScreenPopUp()
 }
-
-

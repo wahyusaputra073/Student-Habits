@@ -2,6 +2,7 @@ package com.wahyusembiring.data.repository
 
 import android.app.Activity
 import android.content.Context
+import androidx.activity.result.ActivityResultRegistryOwner
 import com.wahyusembiring.data.model.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
@@ -17,6 +18,6 @@ interface AuthRepository {
 
     fun signInWithGoogle(context: Context): Flow<Result<User>>
 
-    fun signInWithFacebook(activity: Activity): Flow<Result<User>>
+    fun signInWithFacebook(activityResultRegistryOwner: ActivityResultRegistryOwner): Flow<Result<User>>
 
 }
