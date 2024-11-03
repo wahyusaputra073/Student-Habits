@@ -18,6 +18,7 @@ import androidx.room.PrimaryKey
         )
     ]
 )
+
 data class Subject(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,

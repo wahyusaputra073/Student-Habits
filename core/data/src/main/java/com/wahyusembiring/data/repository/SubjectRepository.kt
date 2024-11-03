@@ -1,6 +1,5 @@
 package com.wahyusembiring.data.repository
 
-import com.wahyusembiring.data.Result
 import com.wahyusembiring.data.model.SubjectWithExam
 import com.wahyusembiring.data.model.SubjectWithExamAndHomework
 import com.wahyusembiring.data.model.SubjectWithLecturer
@@ -22,5 +21,7 @@ interface SubjectRepository {
     suspend fun saveSubject(subject: Subject)
 
     suspend fun updateSubject(subject: Subject)
+
+    suspend fun onDeleteSubject(id: Subject)
 
 }

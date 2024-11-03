@@ -71,7 +71,8 @@ private fun ColumnScope.SubjectPickerContent(
         SubjectListItem(
             colors = listItemColors,
             subject = subject,
-            onClicked = onSubjectSelected
+            onClicked = onSubjectSelected,
+            onDeleteSubClick ={}
         )
     }
     Button(

@@ -22,7 +22,7 @@ import com.wahyusembiring.data.model.entity.Subject
 import com.wahyusembiring.ui.R
 
 @Composable
-fun SubjectListItem(
+fun SubjectListItemMenu(
     modifier: Modifier = Modifier,
     colors: ListItemColors = ListItemDefaults.colors(),
     subject: Subject,
@@ -75,35 +75,6 @@ fun SubjectListItem(
                     }
                 )
             }
-        }
-    )
-}
-
-@Composable
-fun AddNewSubject(
-    modifier: Modifier = Modifier,
-    colors: ListItemColors = ListItemDefaults.colors(),
-    onClicked: (() -> Unit)? = null,
-) {
-    ListItem(
-        colors = colors,
-        modifier = modifier
-            .then(
-                if (onClicked != null) {
-                    Modifier.clickable { onClicked() }
-                } else {
-                    Modifier
-                }
-            ),
-        leadingContent = {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_add),
-                contentDescription = stringResource(R.string.add_new_subject),
-                tint = MaterialTheme.colorScheme.primary
-            )
-        },
-        headlineContent = {
-            Text(text = stringResource(R.string.add_new_subject))
         }
     )
 }

@@ -6,6 +6,7 @@ import com.wahyusembiring.data.model.entity.Exam
 import com.wahyusembiring.data.model.entity.Homework
 import com.wahyusembiring.data.model.entity.Subject
 
+
 data class SubjectWithExamAndHomework(
     @Embedded val subject: Subject,
     @Relation(

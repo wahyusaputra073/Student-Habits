@@ -1,17 +1,20 @@
 package com.wahyusembiring.subject.screen.main
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wahyusembiring.data.model.entity.Subject
 import com.wahyusembiring.data.repository.EventRepository
 import com.wahyusembiring.data.repository.SubjectRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,11 +50,22 @@ class SubjectScreenViewModel @Inject constructor(
             is SubjectScreenUIEvent.OnHamburgerMenuClick -> {}
             is SubjectScreenUIEvent.OnHomeworkClick -> {}
             is SubjectScreenUIEvent.OnSubjectClick -> onSubjectClick(event.subject)
+            is SubjectScreenUIEvent.OnDeleteSubjectClick -> onDeleteSubjectClick(event.subject)
         }
     }
 
     private fun onSubjectClick(subject: Subject) {
         _navigationEvent.trySend(SubjectScreenNavigationEvent.NavigateToSubjectDetail(subject))
+    }
+
+    private fun onDeleteSubjectClick(subject: Subject) {
+        viewModelScope.launch {
+            Log.d("LecturerViewModel", "Deleting lecturer with ID: ${subject.id}")
+            withContext(Dispatchers.IO) {
+                subjectRepository.onDeleteSubject(subject)
+            }
+//            refreshLecturerList()
+        }
     }
 
 
