@@ -19,6 +19,7 @@ import com.facebook.login.LoginResult
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
@@ -79,9 +80,19 @@ class AuthRepositoryImpl @Inject constructor(
 
                     override fun onSuccess(result: LoginResult) {
                         Log.d(TAG, "onSuccess: ${result.accessToken.token}")
+                        val credential = FacebookAuthProvider.getCredential(result.accessToken.token)
+                        Firebase.auth.signInWithCredential(credential)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    val user = task.result.user ?: throw NullPointerException("Trying to sign in with Facebook but user is null")
+                                    trySend(Result.Success(user.toUser()))
+                                } else {
+                                    trySend(Result.Error(task.exception ?: Exception("Facebook login failed")))
+                                }
+                            }
                     }
                 })
-                LoginManager.getInstance().logIn(
+                loginManager.logInWithReadPermissions(
                     activityResultRegistryOwner,
                     callbackManager,
                     permissions

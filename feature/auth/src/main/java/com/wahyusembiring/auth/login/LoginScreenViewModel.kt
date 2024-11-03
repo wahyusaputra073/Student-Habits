@@ -106,8 +106,32 @@ class LoginScreenViewModel @Inject constructor(
         }
         val result = authRepository.signInWithFacebook(activityResultRegistryOwner)
         viewModelScope.launch {
-            result.collect {
+            result.collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _state.update {
+                            it.copy(popUpStack = it.popUpStack + LoginScreenPopUp.SignInLoading)
+                        }
+                    }
 
+                    is Result.Error -> {
+                        val throwable = result.throwable
+                        Log.e(TAG, "Login failed: ${throwable.message}", throwable)
+                        _state.update {
+                            it.copy(
+                                popUpStack = it.popUpStack
+                                    .minus(LoginScreenPopUp.SignInLoading)
+                                    .plus(LoginScreenPopUp.SignInFailed)
+                            )
+                        }
+                    }
+
+                    is Result.Success -> {
+                        _state.update {
+                            it.copy(popUpStack = it.popUpStack - LoginScreenPopUp.SignInLoading)
+                        }
+                    }
+                }
             }
         }
     }

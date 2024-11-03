@@ -1,16 +1,24 @@
 package com.wahyusembiring.habit
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
 import com.facebook.FacebookSdk
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -32,6 +40,9 @@ import com.wahyusembiring.habit.navigation.thesisSelectionScreen
 import com.wahyusembiring.habit.scaffold.MainScaffold
 import com.wahyusembiring.ui.theme.HabitTheme
 import dagger.hilt.android.AndroidEntryPoint
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginResult
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -45,6 +56,7 @@ class MainActivity : ComponentActivity() {
         splashScreen.setKeepOnScreenCondition { !viewModel.isAppReady.value }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             HabitTheme {
                 val navController = rememberNavController()
