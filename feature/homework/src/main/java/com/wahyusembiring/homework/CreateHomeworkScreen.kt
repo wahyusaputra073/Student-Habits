@@ -55,7 +55,7 @@ fun CreateHomeworkScreen(
         onUIEvent = viewModel::onUIEvent,
         onNavigateBack = { navController.navigateUp() },
         onNavigateToCreateSubjectScreen = {
-            navController.navigate(Screen.CreateSubject)
+            navController.navigate(Screen.CreateSubject())
         }
     )
 }
@@ -108,7 +108,7 @@ private fun CreateHomeworkScreen(
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
                     label = {
-                        Text(text = stringResource(R.string.homework_title))
+                        Text(text = stringResource(R.string.task_title))
                     },
                     leadingIcon = {
                         Icon(

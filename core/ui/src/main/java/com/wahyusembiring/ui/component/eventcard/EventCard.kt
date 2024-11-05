@@ -163,7 +163,7 @@ private fun Body(
                         title = event.homework.title,
                         subjectColor = event.subject.color,
                         subjectName = event.subject.name,
-                        eventType = stringResource(R.string.homework)
+                        eventType = stringResource(R.string.task)
                     )
                 }
 
@@ -199,9 +199,8 @@ private fun BodyEventList(
 
     Column(
         modifier = Modifier
-            .clickable {
-                onClick()
-            }
+            .clickable { onClick() },
+        verticalArrangement = Arrangement.spacedBy(15.dp)
     ) {
         Row(
             modifier = Modifier
@@ -214,14 +213,45 @@ private fun BodyEventList(
                 onCheckedChange = onCheckedChange
             )
             Spacer(modifier = Modifier.width(MaterialTheme.spacing.Small))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall.let {
-                    if (!isChecked) it else it.copy(
-                        textDecoration = TextDecoration.LineThrough
-                    )
+            Column(){
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall.let {
+                        if (!isChecked) it else it.copy(
+                            textDecoration = TextDecoration.LineThrough
+                        )
+                    }
+                )
+                Text(
+                    text = "($eventType)",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (subjectName != null && subjectColor != null) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(
+                                    color = subjectColor,
+                                    shape = RoundedCornerShape(50)
+                                )
+                        )
+
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.Small))
+
+                        Column {
+                            Text(
+                                text = subjectName,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
                 }
-            )
+            }
+
             Spacer(modifier = Modifier.weight(1f))
             Column {
                 var expanded by remember { mutableStateOf(false) }
@@ -261,33 +291,7 @@ private fun BodyEventList(
                 }
             }
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = checkBoxWidth.dp / 2),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (subjectName != null && subjectColor != null) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .background(
-                            color = subjectColor,
-                            shape = RoundedCornerShape(50)
-                        )
-                )
-                Spacer(modifier = Modifier.width(MaterialTheme.spacing.Small))
-                Text(
-                    text = subjectName,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-            Spacer(modifier = Modifier.width(MaterialTheme.spacing.Small))
-            Text(
-                text = "($eventType)",
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
+
     }
 }
 
