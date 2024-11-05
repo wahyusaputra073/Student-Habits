@@ -60,6 +60,25 @@ class AuthRepositoryImpl @Inject constructor(
         awaitClose { Firebase.auth.removeAuthStateListener(listener) }
     }
 
+    override fun createUserWithEmailAndPassword(
+        email: String,
+        password: String
+    ): Flow<Result<User>> {
+        return flow {
+            emit(Result.Loading())
+            try {
+                val result = Firebase.auth.createUserWithEmailAndPassword(email, password).await()
+                result.user?.let {
+                    emit(Result.Success(it.toUser()))
+                } ?: run {
+                    emit(Result.Error(NullPointerException("Trying to create user with email and password but null user is returned")))
+                }
+            } catch (throwable: Throwable) {
+                emit(Result.Error(throwable))
+            }
+        }
+    }
+
     override fun signInWithFacebook(activityResultRegistryOwner: ActivityResultRegistryOwner): Flow<Result<User>> {
         val callbackManager = CallbackManager.Factory.create()
         val loginManager = LoginManager.getInstance()
