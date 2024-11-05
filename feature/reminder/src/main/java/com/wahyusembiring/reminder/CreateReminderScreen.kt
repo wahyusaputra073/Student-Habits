@@ -135,9 +135,28 @@ private fun CreateReminderScreen(
                     color = state.color,
                     onClick = { onUIEvent(CreateReminderScreenUIEvent.OnColorPickerButtonClick) }
                 )
-                AddAttachmentButton(
-                    attachments = state.attachments,
-                    onClicked = { onUIEvent(CreateReminderScreenUIEvent.OnAttachmentPickerButtonClick) }
+//                AddAttachmentButton(
+//                    attachments = state.attachments,
+//                    onClicked = { onUIEvent(CreateReminderScreenUIEvent.OnAttachmentPickerButtonClick) }
+//                )
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    label = {
+                        Text(text = stringResource(R.string.reminder_description))
+                    },
+//                    leadingIcon = {
+//                        Icon(
+//                            painter = painterResource(
+//                                id = com.wahyusembiring.ui.R.drawable.ic_title
+//                            ),
+//                            contentDescription = stringResource(R.string.reminder_description),
+//                            tint = MaterialTheme.colorScheme.primary
+//                        )
+//                    },
+                    value = state.description,
+                    onValueChange = {
+                        onUIEvent(CreateReminderScreenUIEvent.OnReminderDescriptionChanged(it))
+                    },
                 )
             }
         }

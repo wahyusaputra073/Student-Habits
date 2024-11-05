@@ -52,6 +52,7 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
         viewModelScope.launch {
             when (event) {
                 is CreateHomeworkUIEvent.OnHomeworkTitleChanged -> onHomeworkTitleChanged(event.title)
+                is CreateHomeworkUIEvent.OnExamDescriptionChanged -> onExamDescriptionChanged(event.title)
                 is CreateHomeworkUIEvent.OnSaveHomeworkButtonClicked -> onSaveHomeworkButtonClick()
                 is CreateHomeworkUIEvent.OnPickDateButtonClicked -> onDatePickerClick()
                 is CreateHomeworkUIEvent.OnPickTimeButtonClicked -> onTimePickerClick()
@@ -214,6 +215,12 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
         }
     }
 
+    private fun onExamDescriptionChanged(description: String) {
+        _state.update {
+            it.copy(description = description)
+        }
+    }
+
     private fun onDateSelected(date: Date) {
         _state.update {
             it.copy(date = date)
@@ -252,6 +259,7 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
                             subject = homeworkDto.subject,
                             attachments = homeworkDto.homework.attachments,
                             isCompleted = homeworkDto.homework.completed,
+                            description = homeworkDto.homework.description,
                         )
                     }
                 }

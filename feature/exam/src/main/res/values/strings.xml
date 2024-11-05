@@ -17,4 +17,5 @@
     <string name="cancel">Cancel</string>
     <string name="success">Success</string>
     <string name="ok">Ok</string>
+    <string name="exam_description">Catatan</string>
 </resources>

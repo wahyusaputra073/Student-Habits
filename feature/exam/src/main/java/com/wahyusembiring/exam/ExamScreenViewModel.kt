@@ -51,6 +51,7 @@ class ExamScreenViewModel @AssistedInject constructor(
     fun onUIEvent(event: ExamScreenUIEvent) {
         when (event) {
             is ExamScreenUIEvent.OnExamNameChanged -> onExamNameChanged(event.name)
+            is ExamScreenUIEvent.OnExamDescriptionChanged -> onExamDescriptionChanged(event.name)
             is ExamScreenUIEvent.OnExamDatePickerClick -> launch { onExamDatePickerClick() }
             is ExamScreenUIEvent.OnExamTimePickerClick -> launch { onExamTimePickerClick() }
             is ExamScreenUIEvent.OnExamSubjectPickerClick -> launch { onExamSubjectPickerClick() }
@@ -140,7 +141,9 @@ class ExamScreenViewModel @AssistedInject constructor(
                             subject = examWithSubject.subject,
                             category = examWithSubject.exam.category,
                             score = examWithSubject.exam.score,
-                            attachments = examWithSubject.exam.attachments
+                            attachments = examWithSubject.exam.attachments,
+                            description = examWithSubject.exam.description
+
                         )
                     }
                 }
@@ -170,7 +173,7 @@ class ExamScreenViewModel @AssistedInject constructor(
                 subjectId = _state.value.subject?.id
                     ?: throw MissingRequiredFieldException.Subject(),
                 category = _state.value.category,
-                description = "",
+                description = _state.value.description,
                 attachments = _state.value.attachments,
                 score = _state.value.score
             )
@@ -209,6 +212,10 @@ class ExamScreenViewModel @AssistedInject constructor(
 
     private fun onExamNameChanged(name: String) {
         _state.value = _state.value.copy(name = name)
+    }
+
+    private fun onExamDescriptionChanged(description: String) {
+        _state.value = _state.value.copy(description = description)
     }
 
     private fun onExamDatePickerClick() {

@@ -11,6 +11,7 @@ import java.util.Date
 data class ExamScreenUIState(
     val isEditMode: Boolean = false,
     val name: String = "",
+    val description: String = "",
     val date: Date? = null,
     val time: Time? = null,
     val subjects: List<Subject> = emptyList(),

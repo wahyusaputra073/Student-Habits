@@ -8,6 +8,7 @@ import java.util.Date
 
 sealed class ExamScreenUIEvent {
     data class OnExamNameChanged(val name: String) : ExamScreenUIEvent()
+    data class OnExamDescriptionChanged(val name: String) : ExamScreenUIEvent()
     data object OnExamDatePickerClick : ExamScreenUIEvent()
     data class OnDatePicked(val date: Date) : ExamScreenUIEvent()
     data object OnDatePickedDismiss : ExamScreenUIEvent()

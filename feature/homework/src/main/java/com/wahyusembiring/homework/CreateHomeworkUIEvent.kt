@@ -8,6 +8,7 @@ import java.util.Date
 
 sealed class CreateHomeworkUIEvent {
     data class OnHomeworkTitleChanged(val title: String) : CreateHomeworkUIEvent()
+    data class OnExamDescriptionChanged(val title: String) : CreateHomeworkUIEvent()
     data object OnSaveHomeworkButtonClicked : CreateHomeworkUIEvent()
     data object OnConfirmSaveHomeworkClick : CreateHomeworkUIEvent()
     data object OnPickDateButtonClicked : CreateHomeworkUIEvent()

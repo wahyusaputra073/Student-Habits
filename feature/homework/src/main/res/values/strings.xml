@@ -17,4 +17,6 @@
     <string name="edit">Edit</string>
     <string name="edit_homework">Edit Homework</string>
     <string name="are_you_sure_you_want_to_edit_this_homework">Are you sure you want to edit this homework?</string>
+    <string name="task_title">Task Title</string>
+    <string name="homework_description">Catatan</string>
 </resources>

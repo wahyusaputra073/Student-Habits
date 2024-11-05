@@ -149,6 +149,24 @@ private fun CreateHomeworkScreen(
                     attachments = state.attachments,
                     onClicked = { onUIEvent(CreateHomeworkUIEvent.OnPickAttachmentButtonClicked) }
                 )
+
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    label = {
+                        Text(text = stringResource(R.string.homework_description))
+                    },
+//                    leadingIcon = {
+//                        Icon(
+//                            painter = painterResource(id = com.wahyusembiring.ui.R.drawable.ic_title),
+//                            contentDescription = stringResource(R.string.homework_description),
+//                            tint = MaterialTheme.colorScheme.primary
+//                        )
+//                    },
+                    value = state.description,
+                    onValueChange = {
+                        onUIEvent(CreateHomeworkUIEvent.OnExamDescriptionChanged(it))
+                    }
+                )
             }
         }
     }

@@ -67,6 +67,9 @@ fun LoginScreen(
                     launchSingleTop = true
                 }
             }
+
+            LoginScreenNavigationEvent.NavigateToHomeScreen -> TODO()
+            LoginScreenNavigationEvent.NavigateToRegisterScreen -> TODO()
         }
     }
 
@@ -97,6 +100,10 @@ fun LoginScreen(
             LoginScreenPopUp.CommonLoading -> {
                 LoadingAlertDialog(message = "")
             }
+
+            LoginScreenPopUp.CommonLoading -> TODO()
+            LoginScreenPopUp.SignInFailed -> TODO()
+            LoginScreenPopUp.SignInLoading -> TODO()
         }
     }
 

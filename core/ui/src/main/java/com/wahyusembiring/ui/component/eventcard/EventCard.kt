@@ -201,18 +201,22 @@ private fun BodyEventList(
         modifier = Modifier
             .clickable { onClick() },
         verticalArrangement = Arrangement.spacedBy(15.dp)
-    ) {
+    ){
+
+
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
-        ) {
+        ){
             Checkbox(
                 modifier = Modifier.onSizeChanged { checkBoxWidth = it.width },
                 checked = isChecked,
                 onCheckedChange = onCheckedChange
             )
+
             Spacer(modifier = Modifier.width(MaterialTheme.spacing.Small))
+
             Column(){
                 Text(
                     text = title,
@@ -242,17 +246,18 @@ private fun BodyEventList(
 
                         Spacer(modifier = Modifier.width(MaterialTheme.spacing.Small))
 
-                        Column {
-                            Text(
-                                text = subjectName,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
+
+                        Text(
+                            text = subjectName,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+
                     }
                 }
             }
 
             Spacer(modifier = Modifier.weight(1f))
+
             Column {
                 var expanded by remember { mutableStateOf(false) }
 
@@ -290,7 +295,10 @@ private fun BodyEventList(
                     )
                 }
             }
+
         }
+//        Column() {}
+        Spacer(modifier = Modifier.width(MaterialTheme.spacing.Small))
 
     }
 }

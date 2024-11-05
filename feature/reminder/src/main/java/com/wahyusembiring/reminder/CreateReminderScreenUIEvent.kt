@@ -9,6 +9,7 @@ import java.util.Date
 sealed class CreateReminderScreenUIEvent {
 
     data class OnTitleChanged(val title: String) : CreateReminderScreenUIEvent()
+    data class OnReminderDescriptionChanged(val title: String) : CreateReminderScreenUIEvent()
     data object OnDatePickerButtonClick : CreateReminderScreenUIEvent()
     data class OnDatePicked(val date: Date) : CreateReminderScreenUIEvent()
     data object OnDatePickerDismiss : CreateReminderScreenUIEvent()

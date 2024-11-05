@@ -72,6 +72,7 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
     fun onUIEvent(event: CreateReminderScreenUIEvent) {
         when (event) {
             is CreateReminderScreenUIEvent.OnTitleChanged -> onTitleChanged(event.title)
+            is CreateReminderScreenUIEvent.OnReminderDescriptionChanged -> onReminderDescriptionChanged(event.title)
             is CreateReminderScreenUIEvent.OnDatePickerButtonClick -> launch { onDatePickerButtonClick() }
             is CreateReminderScreenUIEvent.OnTimePickerButtonClick -> launch { onTimePickerButtonClick() }
             is CreateReminderScreenUIEvent.OnColorPickerButtonClick -> launch { onColorPickerButtonClick() }
@@ -194,6 +195,12 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
     private fun onTitleChanged(title: String) {
         _state.update {
             it.copy(title = title)
+        }
+    }
+
+    private fun onReminderDescriptionChanged(description: String) {
+        _state.update {
+            it.copy(description = description)
         }
     }
 

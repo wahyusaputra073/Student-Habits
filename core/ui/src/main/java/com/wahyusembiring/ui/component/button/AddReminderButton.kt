@@ -18,14 +18,18 @@ import com.wahyusembiring.ui.R
 @Composable
 fun AddReminderButton(
     modifier: Modifier = Modifier,
+    time: Time?,
     onClicked: (() -> Unit)? = null,
-    time: Time?
+    permissionCheck: (() -> Unit)? = null // Menambahkan parameter untuk memeriksa izin
 ) {
     ListItem(
         modifier = modifier
             .then(
                 if (onClicked != null) {
-                    Modifier.clickable { onClicked() }
+                    Modifier.clickable {
+                        // Jika ada fungsi permissionCheck, jalankan
+                        permissionCheck?.invoke() ?: onClicked()
+                    }
                 } else {
                     Modifier
                 }

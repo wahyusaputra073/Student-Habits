@@ -84,6 +84,7 @@
     <string name="tomorrow">Tomorrow</string>
     <string name="no_event_picture">No event picture</string>
     <string name="delete">Delete</string>
+    <string name="task">Task</string>
     <array name="days">
         <item>Sunday</item>
         <item>Monday</item>

@@ -148,10 +148,29 @@ private fun ExamScreenUI(
                     subject = state.subject,
                     onClicked = { onUIEvent(ExamScreenUIEvent.OnExamSubjectPickerClick) }
                 )
-                AddAttachmentButton(
-                    attachments = state.attachments,
-                    onClicked = { onUIEvent(ExamScreenUIEvent.OnExamAttachmentPickerClick) }
+//                AddAttachmentButton(
+//                    attachments = state.attachments,
+//                    onClicked = { onUIEvent(ExamScreenUIEvent.OnExamAttachmentPickerClick) }
+//                )
+
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    label = {
+                        Text(text = stringResource(R.string.exam_description))
+                    },
+//                    leadingIcon = {
+//                        Icon(
+//                            painter = painterResource(id = com.wahyusembiring.ui.R.drawable.ic_title),
+//                            contentDescription = stringResource(R.string.exam_description),
+//                            tint = MaterialTheme.colorScheme.primary
+//                        )
+//                    },
+                    value = state.description,
+                    onValueChange = {
+                        onUIEvent(ExamScreenUIEvent.OnExamDescriptionChanged(it))
+                    },
                 )
+
             }
         }
     }
