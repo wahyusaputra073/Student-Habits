@@ -56,11 +56,9 @@ fun RegisterScreen(
 
     CollectAsOneTimeEvent(viewModel.navigationEvent) { navigationEvent ->
         when (navigationEvent) {
+
             RegisterScreenNavigationEvent.NavigateToLogin -> {
                 navController.navigate(Screen.Login) {
-                    popUpTo(Screen.Login) {
-                        inclusive = true
-                    }
                     launchSingleTop = true
                 }
             }

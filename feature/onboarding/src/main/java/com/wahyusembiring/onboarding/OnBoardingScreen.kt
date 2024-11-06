@@ -48,7 +48,7 @@ fun OnBoardingScreen(
         when (it) {
             is OnBoardingScreenNavigationEvent.NavigateToLogin -> {
                 navController.navigate(Screen.Login) {
-                    popUpTo(Screen.OnBoarding) {
+                    popUpTo(Screen.Login) {
                         inclusive = true
                     }
                 }

@@ -68,8 +68,8 @@ fun LoginScreen(
                 }
             }
 
-            LoginScreenNavigationEvent.NavigateToHomeScreen -> TODO()
-            LoginScreenNavigationEvent.NavigateToRegisterScreen -> TODO()
+//            LoginScreenNavigationEvent.NavigateToHomeScreen -> TODO()
+//            LoginScreenNavigationEvent.NavigateToRegisterScreen -> TODO()
         }
     }
 
@@ -135,7 +135,7 @@ fun LoginScreen(
                 }
             ) {
                 Text(
-                    text = "Lewati"
+                    text = "Skip"
                 )
             }
             ElevatedCard(

@@ -145,10 +145,10 @@ private fun CreateHomeworkScreen(
                     subject = state.subject,
                     onClicked = { onUIEvent(CreateHomeworkUIEvent.OnPickSubjectButtonClicked) }
                 )
-                AddAttachmentButton(
-                    attachments = state.attachments,
-                    onClicked = { onUIEvent(CreateHomeworkUIEvent.OnPickAttachmentButtonClicked) }
-                )
+//                AddAttachmentButton(
+//                    attachments = state.attachments,
+//                    onClicked = { onUIEvent(CreateHomeworkUIEvent.OnPickAttachmentButtonClicked) }
+//                )
 
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
