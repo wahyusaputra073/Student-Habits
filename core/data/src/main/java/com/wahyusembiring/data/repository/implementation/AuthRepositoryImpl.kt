@@ -60,6 +60,18 @@ class AuthRepositoryImpl @Inject constructor(
         awaitClose { Firebase.auth.removeAuthStateListener(listener) }
     }
 
+    override fun logout(): Flow<Result<Unit>> {
+        return flow {
+            emit(Result.Loading())
+            try {
+                Firebase.auth.signOut()
+                emit(Result.Success(Unit))
+            } catch (throwable: Throwable) {
+                emit(Result.Error(throwable))
+            }
+        }
+    }
+
     override fun createUserWithEmailAndPassword(
         email: String,
         password: String

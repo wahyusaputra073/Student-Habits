@@ -73,6 +73,7 @@ private fun onDrawerItemClick(
         Screen.Subject::class -> Screen.Subject
         Screen.Lecture::class -> Screen.Lecture
         Screen.AddLecturer::class -> Screen.AddLecturer
+        Screen.Settings::class -> Screen.Settings
         else -> return
     }
     navController.navigate(screen) {

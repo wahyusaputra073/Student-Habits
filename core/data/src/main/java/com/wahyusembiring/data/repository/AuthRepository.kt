@@ -22,4 +22,6 @@ interface AuthRepository {
 
     fun signInWithFacebook(activityResultRegistryOwner: ActivityResultRegistryOwner): Flow<Result<User>>
 
+    fun logout(): Flow<Result<Unit>>
+
 }

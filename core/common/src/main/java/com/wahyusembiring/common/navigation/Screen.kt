@@ -49,4 +49,7 @@ sealed class Screen {
 
     @Serializable
     data class AddLecturer(val lecturerId: Int = -1) : Screen()
+
+    @Serializable
+    data object Settings : Screen()
 }

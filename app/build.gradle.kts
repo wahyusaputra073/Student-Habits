@@ -32,6 +32,7 @@ dependencies {
 
     implementation(libs.androidx.activity.compose)
 
+    implementation(project(":feature:settings"))
     implementation(project(":feature:homework"))
     implementation(project(":feature:subject"))
     implementation(project(":feature:overview"))

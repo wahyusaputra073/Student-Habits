@@ -8,6 +8,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.wahyusembiring.auth.login.LoginScreen
 import com.wahyusembiring.auth.login.LoginScreenViewModel
+import com.wahyusembiring.auth.register.RegisterScreen
+import com.wahyusembiring.auth.register.RegisterScreenViewModel
 import com.wahyusembiring.calendar.CalendarScreen
 import com.wahyusembiring.calendar.CalendarScreenViewModel
 import com.wahyusembiring.common.navigation.Screen
@@ -27,6 +29,8 @@ import com.wahyusembiring.onboarding.OnBoardingScreenViewModel
 import com.wahyusembiring.overview.OverviewViewModel
 import com.wahyusembiring.reminder.CreateReminderScreen
 import com.wahyusembiring.reminder.CreateReminderScreenViewModel
+import com.wahyusembiring.settings.SettingScreen
+import com.wahyusembiring.settings.SettingScreenViewModel
 import com.wahyusembiring.subject.screen.create.CreateSubjectScreen
 import com.wahyusembiring.subject.screen.create.CreateSubjectViewModel
 import com.wahyusembiring.thesisplanner.screen.planner.ThesisPlannerScreen
@@ -239,6 +243,32 @@ fun NavGraphBuilder.loginScreen(
         LoginScreen(
             viewModel = viewModel,
             navController = navController
+        )
+    }
+}
+
+fun NavGraphBuilder.registerScreen(
+    navController: NavHostController
+) {
+    composable<Screen.Register> {
+        val viewModel: RegisterScreenViewModel = hiltViewModel()
+        RegisterScreen(
+            viewModel = viewModel,
+            navController = navController
+        )
+    }
+}
+
+fun NavGraphBuilder.settingScreen(
+    navController: NavHostController,
+    drawerState: DrawerState
+) {
+    composable<Screen.Settings> {
+        val viewModel: SettingScreenViewModel = hiltViewModel()
+        SettingScreen(
+            viewModel = viewModel,
+            navController = navController,
+            drawerState = drawerState
         )
     }
 }

@@ -39,6 +39,7 @@
             <option value="$PROJECT_DIR$/feature/onboarding" />
             <option value="$PROJECT_DIR$/feature/overview" />
             <option value="$PROJECT_DIR$/feature/reminder" />
+            <option value="$PROJECT_DIR$/feature/settings" />
             <option value="$PROJECT_DIR$/feature/subject" />
             <option value="$PROJECT_DIR$/feature/thesisplanner" />
           </set>

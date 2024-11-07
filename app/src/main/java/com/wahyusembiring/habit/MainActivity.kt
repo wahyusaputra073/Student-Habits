@@ -42,6 +42,8 @@ import com.wahyusembiring.ui.theme.HabitTheme
 import dagger.hilt.android.AndroidEntryPoint
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginResult
+import com.wahyusembiring.habit.navigation.registerScreen
+import com.wahyusembiring.habit.navigation.settingScreen
 
 
 @AndroidEntryPoint
@@ -83,6 +85,8 @@ class MainActivity : ComponentActivity() {
                         lectureScreen(navController, drawerState)
                         addLectureScreen(navController)
                         loginScreen(navController)
+                        registerScreen(navController)
+                        settingScreen(navController, drawerState)
                     }
                 )
             }

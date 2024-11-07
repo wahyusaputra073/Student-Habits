@@ -57,7 +57,8 @@ data class DrawerItem(
                 DrawerItem(
                     title = R.string.settings,
                     icon = R.drawable.ic_settings,
-                    category = Category.CATEGORY_3
+                    category = Category.CATEGORY_3,
+                    screen = Screen.Settings::class
                 )
             )
     }
