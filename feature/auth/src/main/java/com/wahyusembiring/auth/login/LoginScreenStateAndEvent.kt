@@ -3,6 +3,7 @@ package com.wahyusembiring.auth.login
 import android.app.Activity
 import android.content.Context
 import androidx.activity.result.ActivityResultRegistryOwner
+import com.wahyusembiring.auth.EmailValidationError
 
 
 data class LoginScreenUIState(

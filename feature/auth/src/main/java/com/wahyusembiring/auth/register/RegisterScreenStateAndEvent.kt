@@ -2,12 +2,18 @@ package com.wahyusembiring.auth.register
 
 import android.content.Context
 import androidx.activity.result.ActivityResultRegistryOwner
+import com.wahyusembiring.auth.EmailValidationError
+import com.wahyusembiring.auth.PasswordValidationError
+import com.wahyusembiring.auth.ReEnterPasswordValidationError
 
 data class RegisterScreenState(
     val email: String = "",
+    val emailError: EmailValidationError? = null,
     val password: String = "",
+    val passwordError: PasswordValidationError? = null,
     val confirmedPassword: String = "",
-    val popUps: List<RegisterScreenPopUp> = emptyList()
+    val confirmedPasswordError: ReEnterPasswordValidationError? = null,
+    val popUps: List<RegisterScreenPopUp> = emptyList(),
 )
 
 sealed class RegisterScreenEvent {

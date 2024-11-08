@@ -36,8 +36,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.wahyusembiring.auth.EmailValidationError
+import com.wahyusembiring.auth.MIN_PASSWORD_LENGTH
+import com.wahyusembiring.auth.PasswordValidationError
 import com.wahyusembiring.auth.R
+import com.wahyusembiring.auth.ReEnterPasswordValidationError
 import com.wahyusembiring.auth.login.LoginScreenUIEvent
 import com.wahyusembiring.common.navigation.Screen
 import com.wahyusembiring.common.util.CollectAsOneTimeEvent
@@ -52,7 +57,7 @@ fun RegisterScreen(
     navController: NavController
 ) {
 
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     CollectAsOneTimeEvent(viewModel.navigationEvent) { navigationEvent ->
         when (navigationEvent) {
@@ -177,7 +182,18 @@ private fun RegisterScreen(
                             keyboardType = KeyboardType.Email
                         ),
                         maxLines = 1,
-                        singleLine = true
+                        singleLine = true,
+                        isError = state.emailError != null,
+                        supportingText = {
+                            state.emailError?.let {
+                                Text(
+                                    text = when (it) {
+                                        EmailValidationError.Empty -> stringResource(R.string.email_cannot_be_empty)
+                                        EmailValidationError.Invalid -> stringResource(R.string.invalid_email_format)
+                                    }
+                                )
+                            }
+                        }
                     )
                     OutlinedTextField(
                         modifier = Modifier
@@ -194,12 +210,26 @@ private fun RegisterScreen(
                         maxLines = 1,
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
+                        isError = state.passwordError != null,
+                        supportingText = {
+                            state.passwordError?.let {
+                                Text(
+                                    text = when (it) {
+                                        PasswordValidationError.Empty -> stringResource(R.string.password_cannot_be_empty)
+                                        PasswordValidationError.TooShort -> stringResource(
+                                            R.string.password_must_be_at_least_characters,
+                                            MIN_PASSWORD_LENGTH
+                                        )
+                                    }
+                                )
+                            }
+                        }
                     )
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = MaterialTheme.spacing.Medium),
-                        value = state.password,
+                        value = state.confirmedPassword,
                         onValueChange = {
                             onEvent(RegisterScreenEvent.ConfirmedPasswordChanged(it))
                         },
@@ -210,6 +240,17 @@ private fun RegisterScreen(
                         maxLines = 1,
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
+                        isError = state.confirmedPasswordError != null,
+                        supportingText = {
+                            state.confirmedPasswordError?.let {
+                                Text(
+                                    text = when (it) {
+                                        ReEnterPasswordValidationError.Empty -> stringResource(R.string.password_cannot_be_empty)
+                                        ReEnterPasswordValidationError.NotMatch -> stringResource(R.string.password_not_match)
+                                    }
+                                )
+                            }
+                        }
                     )
                     Button(
                         modifier = Modifier.padding(vertical = MaterialTheme.spacing.Large),
