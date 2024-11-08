@@ -36,6 +36,7 @@ class MainRepositoryImpl @Inject constructor(
     private val lecturerDao: LecturerDao
 ) : MainRepository {
 
+    @Deprecated("will be removed soon, fetch corresponding data directly from server when data is needed and then cache it to local")
     override suspend fun syncToLocal(): Flow<Result<Unit>> = flow {
         emit(Result.Loading())
         try {
@@ -63,6 +64,7 @@ class MainRepositoryImpl @Inject constructor(
         }
     }
 
+    @Deprecated("will be removed soon, upload corresponding data directly to server when data is changed and then cache it to local")
     override suspend fun syncToCloud(): Flow<Result<Unit>> = flow {
         emit(Result.Loading())
         try {

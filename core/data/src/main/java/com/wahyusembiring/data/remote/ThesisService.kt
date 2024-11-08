@@ -45,7 +45,7 @@ class ThesisService @Inject constructor(
         val thesisWithTask = ThesisWithTask(thesis, emptyList())
         db.collection(USER_COLLECTION_ID)
             .document(user.id)
-            .collection(THESIS_COLLECTION_ID).document(thesis.id.toString())
+            .collection(THESIS_COLLECTION_ID).document(thesis.id)
             .set(thesisWithTask.toHashMap(converter))
             .await()
     }
@@ -54,7 +54,7 @@ class ThesisService @Inject constructor(
         val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
         db.collection(USER_COLLECTION_ID)
             .document(user.id)
-            .collection(THESIS_COLLECTION_ID).document(thesisWithTask.thesis.id.toString())
+            .collection(THESIS_COLLECTION_ID).document(thesisWithTask.thesis.id)
             .set(thesisWithTask.toHashMap(converter))
             .await()
     }
@@ -63,16 +63,16 @@ class ThesisService @Inject constructor(
         val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
         db.collection(USER_COLLECTION_ID)
             .document(user.id)
-            .collection(THESIS_COLLECTION_ID).document(thesis.id.toString())
+            .collection(THESIS_COLLECTION_ID).document(thesis.id)
             .update(thesis.toHashMap(converter))
             .await()
     }
 
-    suspend fun updateThesisTitleById(id: Int, title: String) {
+    suspend fun updateThesisTitleById(id: String, title: String) {
         val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
         db.collection(USER_COLLECTION_ID)
             .document(user.id)
-            .collection(THESIS_COLLECTION_ID).document(id.toString())
+            .collection(THESIS_COLLECTION_ID).document(id)
             .update("title", title)
             .await()
     }
@@ -81,7 +81,7 @@ class ThesisService @Inject constructor(
         val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
         db.collection(USER_COLLECTION_ID)
             .document(user.id)
-            .collection(THESIS_COLLECTION_ID).document(thesis.id.toString())
+            .collection(THESIS_COLLECTION_ID).document(thesis.id)
             .delete()
             .await()
     }
@@ -91,7 +91,7 @@ class ThesisService @Inject constructor(
         db.collection(USER_COLLECTION_ID)
             .document(user.id)
             .collection(THESIS_COLLECTION_ID)
-            .document(task.thesisId.toString())
+            .document(task.thesisId)
             .update(
                 "tasks", FieldValue.arrayUnion(
                     task.toHashMap(converter).toMap()
@@ -105,7 +105,7 @@ class ThesisService @Inject constructor(
         db.collection(USER_COLLECTION_ID)
             .document(user.id)
             .collection(THESIS_COLLECTION_ID)
-            .document(task.thesisId.toString())
+            .document(task.thesisId)
             .update("tasks", FieldValue.arrayRemove(task.toHashMap(converter).toMap()))
             .await()
     }
@@ -116,7 +116,7 @@ class ThesisService @Inject constructor(
             val docRef = db.collection(USER_COLLECTION_ID)
                 .document(user.id)
                 .collection(THESIS_COLLECTION_ID)
-                .document(task.thesisId.toString())
+                .document(task.thesisId)
             transaction.update(
                 docRef,
                 "tasks",

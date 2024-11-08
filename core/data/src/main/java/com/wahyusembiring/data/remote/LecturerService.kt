@@ -64,13 +64,13 @@ class LecturerService @Inject constructor(
         }
     }
 
-    suspend fun getLecturerById(id: Int): Lecturer {
+    suspend fun getLecturerById(id: String): Lecturer {
         val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
         val document = db
             .collection(USER_COLLECTION_ID)
             .document(user.id)
             .collection(LECTURER_COLLECTION_ID)
-            .document(id.toString()).get().await()
+            .document(id).get().await()
         return document.toLecturer(converter)
     }
 
@@ -80,7 +80,7 @@ class LecturerService @Inject constructor(
         db.collection(USER_COLLECTION_ID)
             .document(user.id)
             .collection(LECTURER_COLLECTION_ID)
-            .document(lecturer.id.toString()).set(newLecturer)
+            .document(lecturer.id).set(newLecturer)
             .await()
     }
 

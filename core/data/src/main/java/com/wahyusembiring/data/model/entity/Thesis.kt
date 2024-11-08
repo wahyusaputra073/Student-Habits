@@ -5,13 +5,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.wahyusembiring.data.model.File
+import java.util.UUID
 
 @Entity(
     tableName = "thesis"
 )
 data class Thesis(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    @PrimaryKey(autoGenerate = false)
+    val id: String = UUID.randomUUID().toString(),
 
     val title: String,
 

@@ -45,6 +45,25 @@ class ExamService @Inject constructor(
         }
     }
 
+    suspend fun getExamById(id: String): Exam {
+        val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
+        val document = db.collection(USER_COLLECTION_ID)
+            .document(user.id)
+            .collection(EXAM_COLLECTION_ID)
+            .document(id)
+            .get()
+            .await()
+        return document.toExam(converter)
+    }
+
+    suspend fun getExamWithSubjectById(id: String): ExamWithSubject {
+        val exam = getExamById(id)
+        return ExamWithSubject(
+            exam = exam,
+            subject = subjectService.getSubjectById(exam.subjectId)
+        )
+    }
+
     suspend fun saveExam(exam: Exam) {
         val newExam = exam.toHashMap(converter)
         val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
@@ -52,7 +71,7 @@ class ExamService @Inject constructor(
             .collection(USER_COLLECTION_ID)
             .document(user.id)
             .collection(EXAM_COLLECTION_ID)
-            .document(exam.id.toString())
+            .document(exam.id)
         document
             .set(newExam)
             .await()
@@ -63,13 +82,13 @@ class ExamService @Inject constructor(
         val document = db
             .collection(USER_COLLECTION_ID)
             .document(user.id)
-            .collection(EXAM_COLLECTION_ID).document(exam.id.toString())
+            .collection(EXAM_COLLECTION_ID).document(exam.id)
         document
             .delete()
             .await()
     }
 
-    suspend fun getAllExamBySubjectId(subjectId: Int): List<Exam> {
+    suspend fun getAllExamBySubjectId(subjectId: String): List<Exam> {
         val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
         val querySnapshot = db
             .collection(USER_COLLECTION_ID)

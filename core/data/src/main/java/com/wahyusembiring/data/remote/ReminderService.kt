@@ -33,6 +33,18 @@ class ReminderService @Inject constructor(
         return querySnapshot.documents.map { it.toReminder(converter) }
     }
 
+    suspend fun getReminderById(id: String): Reminder {
+        val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
+        val document = db
+            .collection(USER_COLLECTION_ID)
+            .document(user.id)
+            .collection(REMINDER_COLLECTION_ID)
+            .document(id)
+            .get()
+
+        return document.await().toReminder(converter)
+    }
+
     suspend fun saveReminder(reminder: Reminder) {
         val newReminder = reminder.toHashMap(converter)
         val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
@@ -40,7 +52,7 @@ class ReminderService @Inject constructor(
             .collection(USER_COLLECTION_ID)
             .document(user.id)
             .collection(REMINDER_COLLECTION_ID)
-            .document(reminder.id.toString())
+            .document(reminder.id)
         document
             .set(newReminder)
             .await()
@@ -52,7 +64,7 @@ class ReminderService @Inject constructor(
             .collection(USER_COLLECTION_ID)
             .document(user.id)
             .collection(REMINDER_COLLECTION_ID)
-            .document(reminder.id.toString())
+            .document(reminder.id)
         document
             .delete()
             .await()

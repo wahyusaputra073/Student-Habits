@@ -1,21 +1,18 @@
 package com.wahyusembiring.data.repository
 
+import com.wahyusembiring.data.Result
 import com.wahyusembiring.data.model.HomeworkWithSubject
 import com.wahyusembiring.data.model.entity.Homework
 import kotlinx.coroutines.flow.Flow
 
 interface HomeworkRepository {
 
-    fun getAllHomeworkWithSubject(
-        minDate: Long? = null,
-        maxDate: Long? = null
-    ): Flow<List<HomeworkWithSubject>>
+    fun getHomeworkById(id: String): Flow<Result<Flow<HomeworkWithSubject?>>>
 
-    fun getHomeworkById(id: Int): Flow<HomeworkWithSubject?>
+    fun saveHomework(homework: Homework): Flow<Result<String>>
 
-    suspend fun saveHomework(homework: Homework): Long
+    fun updateHomework(homework: Homework): Flow<Result<Unit>>
 
-    suspend fun updateHomework(homework: Homework)
+    fun deleteHomework(homework: Homework): Flow<Result<Unit>>
 
-    suspend fun deleteHomework(homework: Homework)
 }

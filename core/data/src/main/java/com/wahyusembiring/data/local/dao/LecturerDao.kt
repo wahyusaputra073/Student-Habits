@@ -21,11 +21,11 @@ interface LecturerDao {
     @Insert(entity = Lecturer::class)
     suspend fun insertLecturer(lecturer: Lecturer): Long
 
-    @Insert(entity = Lecturer::class, onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertLecturer(lecturers: List<Lecturer>): List<Long>
+    @Insert(entity = Lecturer::class)
+    suspend fun insertLecturers(lecturers: List<Lecturer>): List<Long>
 
     @Query("SELECT * FROM lecturer WHERE id = :id")
-    fun getLecturerById(id: Int): Flow<Lecturer?>
+    fun getLecturerById(id: String): Flow<Lecturer?>
 
     @Update(entity = Lecturer::class)
     suspend fun updateLecturer(lecturer: Lecturer)
@@ -36,7 +36,6 @@ interface LecturerDao {
     @Query("DELETE FROM lecturer WHERE phone = :phoneNumber")
     suspend fun deletePhoneNumber(phoneNumber: String)
 
-
-//    @Query("SELECT * FROM lecturer")
-//    fun getAllLecturerWithSubjects(): Flow<List<LecturerWithSubject>>
+    @Query("DELETE FROM lecturer")
+    suspend fun deleteAllLecturer()
 }

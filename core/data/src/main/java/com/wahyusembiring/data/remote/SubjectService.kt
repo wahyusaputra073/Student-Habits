@@ -36,12 +36,12 @@ class SubjectService @Inject constructor(
         return querySnapshot.documents.map { it.toSubject(converter) }
     }
 
-    suspend fun getSubjectById(id: Int): Subject {
+    suspend fun getSubjectById(id: String): Subject {
         val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
         val document = db
             .collection(USER_COLLECTION_ID)
             .document(user.id)
-            .collection(SUBJECT_COLLECTION_ID).document(id.toString()).get().await()
+            .collection(SUBJECT_COLLECTION_ID).document(id).get().await()
         return document.toSubject(converter)
     }
 
@@ -51,7 +51,7 @@ class SubjectService @Inject constructor(
         val document = db
             .collection(USER_COLLECTION_ID)
             .document(user.id)
-            .collection(SUBJECT_COLLECTION_ID).document(subject.id.toString())
+            .collection(SUBJECT_COLLECTION_ID).document(subject.id)
         document
             .set(newSubject)
             .await()

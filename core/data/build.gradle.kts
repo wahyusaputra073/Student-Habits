@@ -8,6 +8,11 @@ plugins {
 
 android {
     namespace = "com.wahyusembiring.data"
+
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+    }
+
 }
 
 dependencies {
@@ -31,4 +36,7 @@ dependencies {
     implementation(libs.googleid)
 
     implementation(libs.facebook.android.sdk)
+
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+
 }

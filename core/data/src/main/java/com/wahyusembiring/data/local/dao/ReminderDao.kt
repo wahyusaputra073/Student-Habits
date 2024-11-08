@@ -18,7 +18,7 @@ interface ReminderDao {
     fun getAllReminder(): Flow<List<Reminder>>
 
     @Query("SELECT * FROM reminder WHERE id = :id")
-    fun getReminderById(id: Int): Flow<Reminder?>
+    fun getReminderById(id: String): Flow<Reminder?>
 
     @Query(
         "SELECT * " +
@@ -31,8 +31,11 @@ interface ReminderDao {
     @Insert(entity = Reminder::class)
     suspend fun insertReminder(reminder: Reminder): Long
 
-    @Insert(entity = Reminder::class, onConflict = OnConflictStrategy.IGNORE)
+    @Insert(entity = Reminder::class)
     suspend fun insertReminder(reminders: List<Reminder>): List<Long>
+
+    @Upsert(entity = Reminder::class)
+    suspend fun upsertReminder(reminder: Reminder)
 
     @Update(entity = Reminder::class)
     suspend fun updateReminder(reminder: Reminder)
@@ -40,4 +43,6 @@ interface ReminderDao {
     @Delete(entity = Reminder::class)
     suspend fun deleteReminder(reminder: Reminder)
 
+    @Query("DELETE FROM reminder")
+    suspend fun deleteAllReminder()
 }

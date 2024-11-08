@@ -50,13 +50,24 @@ class HomeworkService @Inject constructor(
         }
     }
 
+    suspend fun getHomeworkWithSubjectById(id: String): HomeworkWithSubject {
+        val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
+        val document = db
+            .collection(USER_COLLECTION_ID)
+            .document(user.id)
+            .collection(HOMEWORK_COLLECTION_ID).document(id).get().await()
+        val homework = document.toHomework(converter)
+        val subject = subjectService.getSubjectById(homework.subjectId)
+        return HomeworkWithSubject(homework, subject)
+    }
+
     suspend fun saveHomework(homework: Homework) {
         val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
         val newHomework = homework.toHashMap(converter)
         val document = db
             .collection(USER_COLLECTION_ID)
             .document(user.id)
-            .collection(HOMEWORK_COLLECTION_ID).document(homework.id.toString())
+            .collection(HOMEWORK_COLLECTION_ID).document(homework.id)
         document
             .set(newHomework)
             .await()
@@ -67,7 +78,7 @@ class HomeworkService @Inject constructor(
         val document = db
             .collection(USER_COLLECTION_ID)
             .document(user.id)
-            .collection(HOMEWORK_COLLECTION_ID).document(homework.id.toString())
+            .collection(HOMEWORK_COLLECTION_ID).document(homework.id)
         document
             .delete()
             .await()

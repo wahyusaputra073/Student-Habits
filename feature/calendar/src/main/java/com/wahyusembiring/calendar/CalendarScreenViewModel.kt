@@ -6,7 +6,6 @@ import com.wahyusembiring.data.model.ExamWithSubject
 import com.wahyusembiring.data.model.HomeworkWithSubject
 import com.wahyusembiring.data.model.entity.Reminder
 import com.wahyusembiring.data.repository.EventRepository
-import com.wahyusembiring.data.repository.ExamRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

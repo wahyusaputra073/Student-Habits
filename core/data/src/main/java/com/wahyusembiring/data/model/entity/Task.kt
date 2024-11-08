@@ -4,8 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -14,7 +12,10 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import java.util.Date
+import java.time.Duration
+import java.time.LocalDate
+import java.util.UUID
+import kotlin.time.Duration.Companion.days
 
 @Entity(
     tableName = "task",
@@ -31,12 +32,12 @@ import java.util.Date
 
 @Serializable
 data class Task(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    @PrimaryKey(autoGenerate = false)
+    val id: String = UUID.randomUUID().toString(),
 
     @SerialName("thesis_id")
     @ColumnInfo(name = "thesis_id")
-    val thesisId: Int,
+    val thesisId: String,
 
     val name: String,
 
@@ -45,20 +46,20 @@ data class Task(
     val isCompleted: Boolean = false,
 
     @SerialName("due_date")
-    @Serializable(with = DateSerializer::class)
+    @Serializable(with = LocalDateSerializer::class)
     @ColumnInfo(name = "due_date")
-    val dueDate: Date
+    val dueDate: LocalDate
 )
 
-object DateSerializer : KSerializer<Date> {
+object LocalDateSerializer : KSerializer<LocalDate> {
     override val descriptor: SerialDescriptor
-        get() = PrimitiveSerialDescriptor("Date", PrimitiveKind.LONG)
+        get() = PrimitiveSerialDescriptor("LocalDate", PrimitiveKind.LONG)
 
-    override fun serialize(encoder: Encoder, value: Date) {
-        encoder.encodeLong(value.time)
+    override fun serialize(encoder: Encoder, value: LocalDate) {
+        encoder.encodeLong(value.toEpochDay().days.inWholeMilliseconds)
     }
 
-    override fun deserialize(decoder: Decoder): Date {
-        return Date(decoder.decodeLong())
+    override fun deserialize(decoder: Decoder): LocalDate {
+        return LocalDate.ofEpochDay(Duration.ofMillis(decoder.decodeLong()).toDays())
     }
 }

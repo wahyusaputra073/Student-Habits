@@ -18,7 +18,7 @@ interface TaskDao {
     @Insert(entity = Task::class)
     suspend fun insertTask(task: Task): Long
 
-    @Insert(entity = Task::class, onConflict = OnConflictStrategy.IGNORE)
+    @Insert(entity = Task::class)
     suspend fun insertTask(tasks: List<Task>): List<Long>
 
     @Update(entity = Task::class)
@@ -26,5 +26,8 @@ interface TaskDao {
 
     @Delete(entity = Task::class)
     suspend fun deleteTask(task: Task)
+
+    @Query("DELETE FROM task")
+    suspend fun deleteAllTask()
 
 }

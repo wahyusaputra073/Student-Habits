@@ -7,7 +7,10 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.wahyusembiring.data.model.Attachment
 import com.wahyusembiring.data.model.Time
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.Date
+import java.util.UUID
 
 @Entity(
     tableName = "exam",
@@ -22,17 +25,17 @@ import java.util.Date
     ]
 )
 data class Exam(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    @PrimaryKey(autoGenerate = false)
+    val id: String = UUID.randomUUID().toString(),
 
     val title: String,
 
-    val date: Date,
+    val date: LocalDate,
 
-    val reminder: Time?,
+    val reminder: LocalTime?,
 
     @ColumnInfo(name = "subject_id")
-    val subjectId: Int,
+    val subjectId: String,
 
     val category: ExamCategory,
 

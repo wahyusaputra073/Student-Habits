@@ -24,18 +24,24 @@ interface ExamDao {
 
     @Transaction
     @Query("SELECT * FROM exam WHERE id = :id")
-    fun getExamById(id: Int): Flow<ExamWithSubject?>
+    fun getExamById(id: String): Flow<ExamWithSubject?>
 
     @Insert(entity = Exam::class)
     suspend fun insertExam(exam: Exam): Long
 
-    @Insert(entity = Exam::class, onConflict = OnConflictStrategy.IGNORE)
+    @Insert(entity = Exam::class)
     suspend fun insertExam(exams: List<Exam>): List<Long>
+
+    @Upsert(entity = Exam::class)
+    suspend fun upsertExam(exam: Exam)
 
     @Update(entity = Exam::class)
     suspend fun updateExam(exam: Exam)
 
     @Delete(entity = Exam::class)
     suspend fun deleteExam(exam: Exam)
+
+    @Query("DELETE FROM exam")
+    suspend fun deleteAllExam()
 
 }

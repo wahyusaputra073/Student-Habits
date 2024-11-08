@@ -5,6 +5,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import java.util.UUID
 
 @Entity(
     tableName = "subject",
@@ -20,8 +21,8 @@ import androidx.room.PrimaryKey
 )
 
 data class Subject(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    @PrimaryKey(autoGenerate = false)
+    val id: String = UUID.randomUUID().toString(),
 
     val name: String,
 
@@ -30,7 +31,7 @@ data class Subject(
     val room: String,
 
     @ColumnInfo("lecturer_id")
-    val lecturerId: Int,
+    val lecturerId: String,
 
     val description: String,
 )

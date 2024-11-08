@@ -20,20 +20,24 @@ interface ThesisDao {
 
     @Transaction
     @Query("SELECT * FROM thesis WHERE id = :thesisId")
-    fun getThesisById(thesisId: Int): Flow<ThesisWithTask>
+    fun getThesisById(thesisId: String): Flow<ThesisWithTask>
 
     @Insert(entity = Thesis::class)
     suspend fun insertThesis(thesis: Thesis): Long
 
-    @Insert(entity = Thesis::class, onConflict = OnConflictStrategy.IGNORE)
+    @Insert(entity = Thesis::class)
     suspend fun insertThesis(thesis: List<Thesis>): List<Long>
 
     @Update(entity = Thesis::class)
     suspend fun updateThesis(thesis: Thesis)
 
     @Query("UPDATE thesis SET title = :title WHERE id = :thesisId")
-    suspend fun updateThesisTitleById(thesisId: Int, title: String)
+    suspend fun updateThesisTitleById(thesisId: String, title: String)
 
     @Delete(entity = Thesis::class)
     suspend fun deleteThesis(thesis: Thesis)
+
+    @Query("DELETE FROM thesis")
+    suspend fun deleteAllThesis()
+
 }

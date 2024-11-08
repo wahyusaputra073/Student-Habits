@@ -15,7 +15,11 @@ import com.wahyusembiring.data.util.toAttachment
 import com.wahyusembiring.data.util.toFile
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.Date
+import kotlin.time.Duration.Companion.days
 
 @ProvidedTypeConverter
 class Converter(
@@ -33,24 +37,24 @@ class Converter(
     }
 
     @TypeConverter
-    fun dateToLong(date: Date): Long {
-        return date.time
+    fun dateToLong(localDate: LocalDate): Long {
+        return localDate.toEpochDay().days.inWholeMilliseconds
     }
 
     @TypeConverter
-    fun longToDate(long: Long): Date {
-        return Date(long)
+    fun longToDate(long: Long): LocalDate {
+        return LocalDate.ofEpochDay(Duration.ofMillis(long).toDays())
     }
 
     @TypeConverter
-    fun timeToString(time: Time): String {
-        return "${time.hour}:${time.minute}"
+    fun timeToString(localTime: LocalTime): String {
+        return "${localTime.hour}:${localTime.minute}"
     }
 
     @TypeConverter
-    fun stringToTime(string: String): Time {
+    fun stringToTime(string: String): LocalTime {
         val (hour, minute) = string.split(":")
-        return Time(hour.toInt(), minute.toInt())
+        return LocalTime.of(hour.toInt(), minute.toInt())
     }
 
     @TypeConverter

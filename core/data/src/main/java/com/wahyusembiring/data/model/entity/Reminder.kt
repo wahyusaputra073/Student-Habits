@@ -6,19 +6,22 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.wahyusembiring.data.model.Attachment
 import com.wahyusembiring.data.model.Time
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.Date
+import java.util.UUID
 
 
 @Entity(tableName = "reminder")
 data class Reminder(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    @PrimaryKey(autoGenerate = false)
+    val id: String = UUID.randomUUID().toString(),
 
     val title: String,
 
-    val date: Date,
+    val date: LocalDate,
 
-    val time: Time,
+    val time: LocalTime,
 
     val color: Color,
 

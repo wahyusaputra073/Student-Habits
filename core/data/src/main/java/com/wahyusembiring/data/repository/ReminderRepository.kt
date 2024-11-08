@@ -2,20 +2,16 @@ package com.wahyusembiring.data.repository
 
 import com.wahyusembiring.data.model.entity.Reminder
 import kotlinx.coroutines.flow.Flow
+import com.wahyusembiring.data.Result
 
 interface ReminderRepository {
 
-    fun getAllReminder(
-        minDate: Long? = null,
-        maxDate: Long? = null
-    ): Flow<List<Reminder>>
+    fun getReminderById(id: String): Flow<Result<Flow<Reminder?>>>
 
-    fun getReminderById(id: Int): Flow<Reminder?>
+    fun saveReminder(reminder: Reminder): Flow<Result<String>>
 
-    suspend fun saveReminder(reminder: Reminder): Long
+    fun updateReminder(reminder: Reminder): Flow<Result<Unit>>
 
-    suspend fun updateReminder(reminder: Reminder)
-
-    suspend fun deleteReminder(reminder: Reminder)
+    fun deleteReminder(reminder: Reminder): Flow<Result<Unit>>
 
 }

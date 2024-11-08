@@ -1,6 +1,7 @@
 package com.wahyusembiring.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -21,16 +22,16 @@ interface SubjectDao {
     fun getAllSubject(): Flow<List<Subject>>
 
     @Query("SELECT * FROM subject WHERE id = :id")
-    fun getSubjectById(id: Int): Flow<Subject?>
+    fun getSubjectById(id: String): Flow<Subject?>
 
     @Transaction
     @Query("SELECT * FROM subject WHERE id = :id")
-    fun getSubjectWithLecturerById(id: Int): Flow<SubjectWithLecturer?>
+    fun getSubjectWithLecturerById(id: String): Flow<SubjectWithLecturer?>
 
     @Insert(entity = Subject::class)
     suspend fun insertSubject(subject: Subject): Long
 
-    @Insert(entity = Subject::class, onConflict = OnConflictStrategy.IGNORE)
+    @Insert(entity = Subject::class)
     suspend fun insertSubject(subjects: List<Subject>): List<Long>
 
     @Update(entity = Subject::class)
@@ -48,8 +49,17 @@ interface SubjectDao {
     @Query("SELECT * FROM subject")
     fun getSubjectWithExamAndHomework(): Flow<List<SubjectWithExamAndHomework>>
 
+    @Delete(entity = Subject::class)
+    suspend fun deleteSubject(subject: Subject)
+
+    @Upsert(entity = Subject::class)
+    suspend fun upsertSubject(subject: Subject)
+
+    @Upsert(entity = Subject::class)
+    suspend fun upsertSubject(subjects: List<Subject>)
+
     @Query("DELETE FROM subject WHERE id = :id")
-    suspend fun deleteSubjectById(id: Int)
+    suspend fun deleteSubjectById(id: String)
 
 
     @Transaction
@@ -62,4 +72,8 @@ interface SubjectDao {
                 "END"
     )
     fun getSubjectWithExamAndHomework(scored: Boolean): Flow<List<SubjectWithExamAndHomework>>
+
+    @Query("DELETE FROM subject")
+    suspend fun deleteAllSubject()
+
 }

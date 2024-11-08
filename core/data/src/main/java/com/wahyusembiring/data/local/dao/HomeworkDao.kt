@@ -21,8 +21,11 @@ interface HomeworkDao {
     @Insert(entity = Homework::class)
     suspend fun insertHomework(homework: Homework): Long
 
-    @Insert(entity = Homework::class, onConflict = OnConflictStrategy.IGNORE)
+    @Insert(entity = Homework::class)
     suspend fun insertHomework(homeworks: List<Homework>): List<Long>
+
+    @Upsert(entity = Homework::class)
+    suspend fun upsertHomework(homework: Homework)
 
     @Update(entity = Homework::class)
     suspend fun updateHomework(homework: Homework)
@@ -47,9 +50,12 @@ interface HomeworkDao {
 
     @Transaction
     @Query("SELECT * FROM homework WHERE id = :id")
-    fun getHomeworkById(id: Int): Flow<HomeworkWithSubject?>
+    fun getHomeworkById(id: String): Flow<HomeworkWithSubject?>
 
     @Delete(entity = Homework::class)
     suspend fun deleteHomework(homework: Homework)
+
+    @Query("DELETE FROM homework")
+    suspend fun deleteAllHomework()
 
 }

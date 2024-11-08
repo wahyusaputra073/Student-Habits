@@ -30,7 +30,7 @@ import com.wahyusembiring.data.model.entity.Thesis
         Thesis::class,
         Task::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converter::class)
