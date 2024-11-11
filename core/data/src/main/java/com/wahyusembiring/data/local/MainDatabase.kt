@@ -19,6 +19,8 @@ import com.wahyusembiring.data.model.entity.Reminder
 import com.wahyusembiring.data.model.entity.Subject
 import com.wahyusembiring.data.model.entity.Task
 import com.wahyusembiring.data.model.entity.Thesis
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
 
 @Database(
     entities = [

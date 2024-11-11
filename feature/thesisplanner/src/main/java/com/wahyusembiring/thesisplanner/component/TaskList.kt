@@ -27,6 +27,7 @@ import com.wahyusembiring.data.model.entity.Task
 import com.wahyusembiring.datetime.Moment
 import com.wahyusembiring.datetime.formatter.FormattingStyle
 import com.wahyusembiring.thesisplanner.R
+import kotlin.time.Duration.Companion.days
 
 
 @Composable
@@ -49,7 +50,7 @@ internal fun TaskList(
                 overlineContent = {
                     Text(
                         text = Moment
-                            .fromEpochMilliseconds(task.dueDate.time)
+                            .fromEpochMilliseconds(task.dueDate.toEpochDay().days.inWholeMilliseconds)
                             .toString(FormattingStyle.INDO_SHORT),
                     )
                 },

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wahyusembiring.common.navigation.Screen
+import com.wahyusembiring.data.Result
 import com.wahyusembiring.data.repository.AuthRepository
 import com.wahyusembiring.data.repository.DataStoreRepository
 import com.wahyusembiring.data.repository.MainRepository
@@ -14,6 +15,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -40,7 +42,7 @@ class MainViewModel @Inject constructor(
 //        .stateIn(viewModelScope, SharingStarted.Eagerly, Screen.Login)
 
     val currentUser = authRepository.currentUser.onEach {
-        if (it != null) cloudToLocalSync()
+//        if (it != null) cloudToLocalSync()
     }
 
     init {
@@ -50,14 +52,14 @@ class MainViewModel @Inject constructor(
     private suspend fun initializeApp() {
         coroutineScope {
             launch { delay(MINIMAL_SPLASH_SCREEN_DURATION) }
-            launch { cloudToLocalSync() }
+//            launch { cloudToLocalSync() }
             launch { setupStartDestination() }
             _isAppReady.value = true
         }
     }
 
     fun onActivityPause() {
-        viewModelScope.launch { localToCloudSync() }
+//        viewModelScope.launch { localToCloudSync() }
     }
 
     private suspend fun localToCloudSync() {
@@ -80,7 +82,11 @@ class MainViewModel @Inject constructor(
 
     private suspend fun setupStartDestination(): Unit = coroutineScope {
         val isOnBoardingCompleted = async {
-            dataStoreRepository.readOnBoardingState().first()
+            when (val result = dataStoreRepository.readOnBoardingState().last()) {
+                is Result.Loading -> { throw IllegalStateException("Expecting Error or Success as last emitted value but got Loading") }
+                is Result.Error -> { throw result.throwable }
+                is Result.Success -> { result.data.first() }
+            }
         }.await()
         val isUserLoggedIn = async {
             authRepository.currentUser.first() != null

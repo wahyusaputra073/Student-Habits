@@ -39,7 +39,7 @@ fun DocumentSnapshot.toExam(converter: Converter): Exam {
         attachments = get("attachments", String::class.java)
             .let { converter.jsonStringToListOfAttachment(it!!) },
         score = get("score", Int::class.java),
-        category = get("grade", String::class.java)
+        category = get("category", String::class.java)
             .let { converter.stringToExamCategory(it!!) }
     )
 }

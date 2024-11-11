@@ -52,7 +52,9 @@ import com.wahyusembiring.ui.theme.spacing
 import com.wahyusembiring.ui.util.checkForPermissionOrLaunchPermissionLauncher
 import com.wahyusembiring.ui.util.getFileAccessPermissionRequest
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.util.Date
+import java.util.UUID
 
 @Composable
 fun ThesisPlannerScreen(
@@ -226,9 +228,9 @@ private fun ThesisPlannerScreen(
             var task by remember {
                 mutableStateOf(
                     Task(
-                        thesisId = 0,
+                        thesisId = UUID.randomUUID().toString(),
                         name = "",
-                        dueDate = Date(System.currentTimeMillis())
+                        dueDate = LocalDate.now()
                     )
                 )
             }

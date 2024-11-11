@@ -6,6 +6,9 @@ plugins {
 
 android {
     namespace = "com.wahyusembiring.ui"
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+    }
 }
 
 dependencies {
@@ -21,4 +24,7 @@ dependencies {
 
     //   Compose Color Picker
     implementation(libs.compose.colorpicker)
+
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+
 }

@@ -1,22 +1,24 @@
 package com.wahyusembiring.data.repository
 
+import com.wahyusembiring.data.Result
 import com.wahyusembiring.data.model.LecturerWithSubject
 import com.wahyusembiring.data.model.entity.Lecturer
 import kotlinx.coroutines.flow.Flow
 
 interface LecturerRepository {
 
-    fun getAllLecturer(): Flow<List<Lecturer>>
+    fun getAllLecturer(): Flow<Result<Flow<List<Lecturer>>>>
 
-    fun getLecturerById(id: Int): Flow<Lecturer?>
+    fun getLecturerById(id: String): Flow<Result<Flow<Lecturer?>>>
 
-    fun getAllLecturerWithSubjects(): Flow<List<LecturerWithSubject>>
+    fun getAllLecturerWithSubjects(): Flow<Result<Flow<List<LecturerWithSubject>>>>
 
-    suspend fun insertLecturer(lecturer: Lecturer): Long
+    fun insertLecturer(lecturer: Lecturer): Flow<Result<String>>
 
-    suspend fun updateLecturer(lecturer: Lecturer)
+    fun updateLecturer(lecturer: Lecturer): Flow<Result<Unit>>
 
-    suspend fun deleteLecturer(id: Int) // Menambahkan metode untuk menghapus dosen
+    fun deleteLecturer(id: String): Flow<Result<Unit>> // Menambahkan metode untuk menghapus dosen
 
-    suspend fun deletePhoneNumber(phoneNumber: String) // Menambahkan metode untuk menghapus nomor telepon
+    fun deletePhoneNumber(phoneNumber: String): Flow<Result<Unit>> // Menambahkan metode untuk menghapus nomor telepon
+    
 }

@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import com.wahyusembiring.data.Result
+import kotlinx.coroutines.flow.catch
 
 class AuthRepositoryImpl @Inject constructor(
     private val application: Application
@@ -63,12 +64,10 @@ class AuthRepositoryImpl @Inject constructor(
     override fun logout(): Flow<Result<Unit>> {
         return flow {
             emit(Result.Loading())
-            try {
-                Firebase.auth.signOut()
-                emit(Result.Success(Unit))
-            } catch (throwable: Throwable) {
-                emit(Result.Error(throwable))
-            }
+            Firebase.auth.signOut()
+            emit(Result.Success(Unit))
+        }.catch {
+            emit(Result.Error(it))
         }
     }
 
@@ -76,18 +75,16 @@ class AuthRepositoryImpl @Inject constructor(
         email: String,
         password: String
     ): Flow<Result<User>> {
-        return flow {
+        return flow<Result<User>> {
             emit(Result.Loading())
-            try {
-                val result = Firebase.auth.createUserWithEmailAndPassword(email, password).await()
-                result.user?.let {
-                    emit(Result.Success(it.toUser()))
-                } ?: run {
-                    emit(Result.Error(NullPointerException("Trying to create user with email and password but null user is returned")))
-                }
-            } catch (throwable: Throwable) {
-                emit(Result.Error(throwable))
+            val result = Firebase.auth.createUserWithEmailAndPassword(email, password).await()
+            result.user?.let {
+                emit(Result.Success(it.toUser()))
+            } ?: run {
+                emit(Result.Error(NullPointerException("Trying to create user with email and password but null user is returned")))
             }
+        }.catch {
+            emit(Result.Error(it))
         }
     }
 
@@ -96,118 +93,107 @@ class AuthRepositoryImpl @Inject constructor(
         val loginManager = LoginManager.getInstance()
         val permissions = listOf("email", "public_profile")
 
-        return callbackFlow {
+        return callbackFlow<Result<User>> {
             trySend(Result.Loading())
+            loginManager.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+                override fun onCancel() {
+                    trySend(Result.Error(Exception("Facebook login canceled")))
+                }
 
-            try {
-                loginManager.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
-                    override fun onCancel() {
-                        trySend(Result.Error(Exception("Facebook login canceled")))
-                    }
+                override fun onError(error: FacebookException) {
+                    trySend(Result.Error(error))
+                }
 
-                    override fun onError(error: FacebookException) {
-                        trySend(Result.Error(error))
-                    }
-
-                    override fun onSuccess(result: LoginResult) {
-                        Log.d(TAG, "onSuccess: ${result.accessToken.token}")
-                        val credential = FacebookAuthProvider.getCredential(result.accessToken.token)
-                        Firebase.auth.signInWithCredential(credential)
-                            .addOnCompleteListener { task ->
-                                if (task.isSuccessful) {
-                                    val user = task.result.user ?: throw NullPointerException("Trying to sign in with Facebook but user is null")
-                                    trySend(Result.Success(user.toUser()))
-                                } else {
-                                    trySend(Result.Error(task.exception ?: Exception("Facebook login failed")))
-                                }
+                override fun onSuccess(result: LoginResult) {
+                    Log.d(TAG, "onSuccess: ${result.accessToken.token}")
+                    val credential = FacebookAuthProvider.getCredential(result.accessToken.token)
+                    Firebase.auth.signInWithCredential(credential)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val user = task.result.user ?: throw NullPointerException("Trying to sign in with Facebook but user is null")
+                                trySend(Result.Success(user.toUser()))
+                            } else {
+                                trySend(Result.Error(task.exception ?: Exception("Facebook login failed")))
                             }
-                    }
-                })
-                loginManager.logInWithReadPermissions(
-                    activityResultRegistryOwner,
-                    callbackManager,
-                    permissions
-                )
-            } catch (exception: Exception) {
-                trySend(Result.Error(exception))
-            }
+                        }
+                }
+            })
+            loginManager.logInWithReadPermissions(
+                activityResultRegistryOwner,
+                callbackManager,
+                permissions
+            )
 
             awaitClose {
                 loginManager.unregisterCallback(callbackManager)
             }
+        }.catch {
+            emit(Result.Error(it))
         }
     }
 
     override fun signInAnonymously(): Flow<Result<User>> {
-        return flow {
+        return flow<Result<User>> {
             emit(Result.Loading())
-            try {
-                val result = Firebase.auth.signInAnonymously().await()
-                result.user?.let {
-                    emit(Result.Success(it.toUser()))
-                } ?: run {
-                    emit(Result.Error(NullPointerException("Trying to sign in anonymously but user is null")))
-                }
-            } catch (throwable: Throwable) {
-                emit(Result.Error(throwable))
+            val result = Firebase.auth.signInAnonymously().await()
+            result.user?.let {
+                emit(Result.Success(it.toUser()))
+            } ?: run {
+                emit(Result.Error(NullPointerException("Trying to sign in anonymously but user is null")))
             }
+        }.catch {
+            emit(Result.Error(it))
         }
     }
 
     override fun signInWithEmailAndPassword(email: String, password: String): Flow<Result<User>> {
-        return flow {
+        return flow<Result<User>> {
             emit(Result.Loading())
-            try {
-                val result = Firebase.auth.signInWithEmailAndPassword(email, password).await()
-                result.user?.let {
-                    emit(Result.Success(it.toUser()))
-                } ?: run {
-                    emit(Result.Error(NullPointerException("Trying to sign in with email and password but user is null")))
-                }
-            } catch (throwable: Throwable) {
-                emit(Result.Error(throwable))
+            val result = Firebase.auth.signInWithEmailAndPassword(email, password).await()
+            result.user?.let {
+                emit(Result.Success(it.toUser()))
+            } ?: run {
+                emit(Result.Error(NullPointerException("Trying to sign in with email and password but user is null")))
             }
+        }.catch {
+            emit(Result.Error(it))
         }
     }
 
     override fun signInWithGoogle(
         context: Context
     ): Flow<Result<User>> {
-        return flow {
+        return flow<Result<User>> {
             emit(Result.Loading())
-            try {
-                val googleIdOption = GetSignInWithGoogleOption.Builder(WEB_CLIENT_ID).build()
-                val request = GetCredentialRequest.Builder()
-                    .addCredentialOption(googleIdOption)
-                    .build()
-                val result = credentialManager.getCredential(
-                    context = context,
-                    request = request
-                )
-                val credential = result.credential
-                if (
-                    credential is CustomCredential
-                    && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
-                ) {
-                    val googleIdTokenCredential = GoogleIdTokenCredential
-                        .createFrom(credential.data)
-                    val idToken = googleIdTokenCredential.idToken
-                    val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
-                    val signInResult =
-                        Firebase.auth.signInWithCredential(firebaseCredential).await()
-                    signInResult.user?.let {
-                        emit(Result.Success(it.toUser()))
-                    } ?: run {
-                        emit(Result.Error(NullPointerException("Trying to sign in with Google but user is null")))
-                    }
-                } else {
-                    emit(Result.Error(Exception("Unexpected type of Credential, type not supported")))
+            val googleIdOption = GetSignInWithGoogleOption.Builder(WEB_CLIENT_ID).build()
+            val request = GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build()
+            val result = credentialManager.getCredential(
+                context = context,
+                request = request
+            )
+            val credential = result.credential
+            if (
+                credential is CustomCredential
+                && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+            ) {
+                val googleIdTokenCredential = GoogleIdTokenCredential
+                    .createFrom(credential.data)
+                val idToken = googleIdTokenCredential.idToken
+                val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+                val signInResult =
+                    Firebase.auth.signInWithCredential(firebaseCredential).await()
+                signInResult.user?.let {
+                    emit(Result.Success(it.toUser()))
+                } ?: run {
+                    emit(Result.Error(NullPointerException("Trying to sign in with Google but user is null")))
                 }
-            } catch (exception: GetCredentialException) {
-                emit(Result.Error(exception))
-            } catch (throwable: Throwable) {
-                emit(Result.Error(throwable))
+            } else {
+                emit(Result.Error(Exception("Unexpected type of Credential, type not supported")))
             }
+        }.catch {
+            emit(Result.Error(it))
         }
     }
 }

@@ -25,13 +25,14 @@ import com.wahyusembiring.data.model.Time
 import com.wahyusembiring.datetime.Moment
 import com.wahyusembiring.ui.R
 import com.wahyusembiring.ui.theme.spacing
+import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimePicker(
     modifier: Modifier = Modifier,
     title: String = stringResource(R.string.when_do_you_want_to_be_reminded),
-    onTimeSelected: (time: Time) -> Unit,
+    onTimeSelected: (time: LocalTime) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
     val moment = remember { Moment.now() }
@@ -70,7 +71,7 @@ fun TimePicker(
                     }
                     TextButton(
                         onClick = {
-                            val time = Time(timePickerState.hour, timePickerState.minute)
+                            val time = LocalTime.of(timePickerState.hour, timePickerState.minute)
                             onTimeSelected(time)
                             onDismissRequest()
                         }

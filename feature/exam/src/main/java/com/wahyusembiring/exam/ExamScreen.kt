@@ -22,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import com.wahyusembiring.common.navigation.Screen
+import com.wahyusembiring.common.util.CollectAsOneTimeEvent
 import com.wahyusembiring.common.util.getNotificationReminderPermission
 import com.wahyusembiring.data.model.entity.ExamCategory
 import com.wahyusembiring.ui.component.button.AddAttachmentButton
@@ -42,22 +43,143 @@ import com.wahyusembiring.ui.component.popup.picker.timepicker.TimePicker
 import com.wahyusembiring.ui.theme.spacing
 import com.wahyusembiring.ui.util.checkForPermissionOrLaunchPermissionLauncher
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExamScreen(
     viewModel: ExamScreenViewModel,
     navController: NavHostController,
 ) {
     val state by viewModel.state.collectAsState()
+
+    CollectAsOneTimeEvent(viewModel.navigationEvent) { event ->
+        when (event) {
+            CreateExamScreenNavigationEvent.NavigateBack -> {
+                navController.navigateUp()
+            }
+            CreateExamScreenNavigationEvent.NavigateToCreateSubject -> {
+                navController.navigate(Screen.CreateSubject())
+            }
+        }
+    }
+
     ExamScreenUI(
         state = state,
         onUIEvent = viewModel::onUIEvent,
-        onNavigateBack = {
-            navController.navigateUp()
-        },
-        onNavigateToCreateSubjectScreen = {
-            navController.navigate(Screen.CreateSubject())
-        }
     )
+
+    for (popUp in state.popUps) {
+        when (popUp) {
+            is CreateExamScreenPopUp.AttachmentPicker -> {
+                AttachmentPicker(
+                    onAttachmentsConfirmed = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnAttachmentPicked(it))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnDismissPopUp(popUp))
+                    }
+                )
+            }
+            is CreateExamScreenPopUp.DatePicker -> {
+                DatePicker(
+                    onDismissRequest = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDateSelected = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnDatePicked(it))
+                    }
+                )
+            }
+            is CreateExamScreenPopUp.Error -> {
+                ErrorAlertDialog(
+                    message = popUp.errorMessage.asString(),
+                    buttonText = stringResource(R.string.ok),
+                    onButtonClicked = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnDismissPopUp(popUp))
+                    }
+                )
+            }
+            is CreateExamScreenPopUp.ExamSavedDialog -> {
+                InformationAlertDialog(
+                    title = stringResource(R.string.success),
+                    message = stringResource(R.string.exam_saved),
+                    buttonText = stringResource(R.string.ok),
+                    onButtonClicked = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnDismissPopUp(popUp))
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnNavigateBackRequest)
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnDismissPopUp(popUp))
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnNavigateBackRequest)
+                    },
+                )
+            }
+            is CreateExamScreenPopUp.Loading -> {
+                LoadingAlertDialog(message = stringResource(R.string.loading))
+            }
+            is CreateExamScreenPopUp.SaveConfirmationDialog -> {
+                ConfirmationAlertDialog(
+                    title = stringResource(R.string.save_exam),
+                    message = if (state.isEditMode) {
+                        stringResource(R.string.are_you_sure_you_want_to_edit_this_exam)
+                    } else {
+                        stringResource(R.string.are_you_sure_you_want_to_save_this_exam)
+                    },
+                    positiveButtonText = stringResource(R.string.save),
+                    onPositiveButtonClick = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnSaveExamConfirmClick)
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    negativeButtonText = stringResource(R.string.cancel),
+                    onNegativeButtonClick = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                )
+            }
+            is CreateExamScreenPopUp.SubjectPicker -> {
+                SubjectPicker(
+                    subjects = state.subjects,
+                    onDismissRequest = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onSubjectSelected = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnSubjectPicked(it))
+                    },
+                    navigateToCreateSubjectScreen = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnNavigateToSubjectScreenRequest)
+                    }
+                )
+            }
+            is CreateExamScreenPopUp.TimePicker -> {
+                TimePicker(
+                    onDismissRequest = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onTimeSelected = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnTimePicked(it))
+                    }
+                )
+            }
+
+            CreateExamScreenPopUp.ExamCategoryPicker -> {
+                ExamCategoryPicker(
+                    initialCategory = state.category,
+                    onDismissRequest = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onCategoryPicked = {
+                        viewModel.onUIEvent(ExamScreenUIEvent.OnCategoryPicked(it))
+                    }
+                )
+            }
+        }
+    }
+
 }
 
 @Suppress("t")
@@ -66,8 +188,6 @@ fun ExamScreen(
 private fun ExamScreenUI(
     state: ExamScreenUIState,
     onUIEvent: (ExamScreenUIEvent) -> Unit,
-    onNavigateBack: () -> Unit,
-    onNavigateToCreateSubjectScreen: () -> Unit,
 ) {
     val context = LocalContext.current
     val notificationPermissionRequestLauncher =
@@ -90,7 +210,9 @@ private fun ExamScreenUI(
                 .fillMaxSize()
         ) {
             NavigationAndActionButtonHeader(
-                onNavigationButtonClicked = onNavigateBack,
+                onNavigationButtonClicked = {
+                    onUIEvent(ExamScreenUIEvent.OnNavigateBackRequest)
+                },
                 actionButtonText = if (state.isEditMode) {
                     stringResource(R.string.edit)
                 } else {
@@ -173,100 +295,6 @@ private fun ExamScreenUI(
 
             }
         }
-    }
-
-    if (state.showDatePicker) {
-        DatePicker(
-            onDismissRequest = { onUIEvent(ExamScreenUIEvent.OnDatePickedDismiss) },
-            onDateSelected = { onUIEvent(ExamScreenUIEvent.OnDatePicked(it)) }
-        )
-    }
-
-    if (state.showTimePicker) {
-        TimePicker(
-            onDismissRequest = { onUIEvent(ExamScreenUIEvent.OnTimePickedDismiss) },
-            onTimeSelected = { onUIEvent(ExamScreenUIEvent.OnTimePicked(it)) }
-        )
-    }
-
-    if (state.showSubjectPicker) {
-        SubjectPicker(
-            subjects = state.subjects,
-            onDismissRequest = { onUIEvent(ExamScreenUIEvent.OnSubjectPickedDismiss) },
-            onSubjectSelected = { onUIEvent(ExamScreenUIEvent.OnSubjectPicked(it)) },
-            navigateToCreateSubjectScreen = onNavigateToCreateSubjectScreen
-        )
-    }
-
-    if (state.showAttachmentPicker) {
-        AttachmentPicker(
-            onAttachmentsConfirmed = { onUIEvent(ExamScreenUIEvent.OnAttachmentPicked(it)) },
-            onDismissRequest = { onUIEvent(ExamScreenUIEvent.OnAttachmentPickedDismiss) }
-        )
-    }
-
-    if (state.showCategoryPicker) {
-        ExamCategoryPicker(
-            initialCategory = ExamCategory.WRITTEN,
-            onDismissRequest = { onUIEvent(ExamScreenUIEvent.OnCategoryPickedDismiss) },
-            onCategoryPicked = { onUIEvent(ExamScreenUIEvent.OnCategoryPicked(it)) }
-        )
-    }
-
-    if (state.showSavingLoading) {
-        LoadingAlertDialog(message = stringResource(R.string.saving))
-    }
-
-    if (state.showSaveConfirmationDialog) {
-        ConfirmationAlertDialog(
-            title = stringResource(R.string.save_exam),
-            message = if (state.isEditMode) {
-                stringResource(R.string.are_you_sure_you_want_to_edit_this_exam)
-            } else {
-                stringResource(R.string.are_you_sure_you_want_to_save_this_exam)
-            },
-            positiveButtonText = stringResource(R.string.save),
-            onPositiveButtonClick = {
-                onUIEvent(ExamScreenUIEvent.OnSaveExamConfirmClick)
-                onUIEvent(ExamScreenUIEvent.OnSaveConfirmationDialogDismiss)
-            },
-            negativeButtonText = stringResource(R.string.cancel),
-            onNegativeButtonClick = {
-                onUIEvent(ExamScreenUIEvent.OnSaveConfirmationDialogDismiss)
-            },
-            onDismissRequest = {
-                onUIEvent(ExamScreenUIEvent.OnSaveConfirmationDialogDismiss)
-            },
-        )
-    }
-
-    if (state.showExamSavedDialog) {
-        InformationAlertDialog(
-            title = stringResource(R.string.success),
-            message = stringResource(R.string.exam_saved),
-            buttonText = stringResource(R.string.ok),
-            onButtonClicked = {
-                onUIEvent(ExamScreenUIEvent.OnExamSavedDialogDismiss)
-                onNavigateBack()
-            },
-            onDismissRequest = {
-                onUIEvent(ExamScreenUIEvent.OnExamSavedDialogDismiss)
-                onNavigateBack()
-            },
-        )
-    }
-
-    if (state.errorMessage != null) {
-        ErrorAlertDialog(
-            message = state.errorMessage.asString(),
-            buttonText = stringResource(R.string.ok),
-            onButtonClicked = {
-                onUIEvent(ExamScreenUIEvent.OnErrorDialogDismiss)
-            },
-            onDismissRequest = {
-                onUIEvent(ExamScreenUIEvent.OnErrorDialogDismiss)
-            }
-        )
     }
 
 }

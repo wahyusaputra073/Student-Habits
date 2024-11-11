@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wahyusembiring.common.util.scheduleReminder
+import com.wahyusembiring.data.Result
 import com.wahyusembiring.data.model.Attachment
 import com.wahyusembiring.data.model.Time
 import com.wahyusembiring.data.model.entity.Homework
@@ -19,8 +20,10 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -28,11 +31,12 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.util.Date
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel(assistedFactory = CreateHomeworkScreenViewModel.Factory::class)
 class CreateHomeworkScreenViewModel @AssistedInject constructor(
-    @Assisted private val homeworkId: Int = -1,
+    @Assisted private val homeworkId: String = "-1",
     private val eventRepository: EventRepository,
     private val subjectRepository: SubjectRepository,
     private val application: Application
@@ -40,13 +44,16 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(homeworkId: Int = -1): CreateHomeworkScreenViewModel
+        fun create(homeworkId: String = "-1"): CreateHomeworkScreenViewModel
     }
 
     private var getAllSubjectJob: Job? = null
 
     private val _state = MutableStateFlow(CreateHomeworkScreenUIState())
     val state = _state.asStateFlow()
+
+    private val _navigationEvent = Channel<CreateHomeworkScreenNavigationEvent>()
+    val navigationEvent = _navigationEvent.receiveAsFlow()
 
     fun onUIEvent(event: CreateHomeworkUIEvent) {
         viewModelScope.launch {
@@ -61,67 +68,34 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
                 is CreateHomeworkUIEvent.OnAttachmentPicked -> onAttachmentPicked(event.attachments)
                 is CreateHomeworkUIEvent.OnConfirmSaveHomeworkClick -> onConfirmSaveHomeworkClick()
                 is CreateHomeworkUIEvent.OnDatePicked -> onDateSelected(event.date)
-                is CreateHomeworkUIEvent.OnDismissAttachmentPicker -> onDismissAttachmentPicker()
-                is CreateHomeworkUIEvent.OnDismissDatePicker -> onDismissDatePicker()
-                is CreateHomeworkUIEvent.OnDismissHomeworkSavedDialog -> onDismissHomeworkSavedDialog()
-                is CreateHomeworkUIEvent.OnDismissSaveConfirmationDialog -> onDismissSaveConfirmationDialog()
-                is CreateHomeworkUIEvent.OnDismissSubjectPicker -> onDismissSubjectPicker()
-                is CreateHomeworkUIEvent.OnDismissTimePicker -> onDismissTimePicker()
+                is CreateHomeworkUIEvent.OnDismissPopUp -> onDismissPopUp(event.popUp)
                 is CreateHomeworkUIEvent.OnSubjectPicked -> onSubjectSelected(event.subject)
                 is CreateHomeworkUIEvent.OnTimePicked -> onTimeSelected(event.time)
-                is CreateHomeworkUIEvent.OnDismissErrorDialog -> onDismissErrorDialog()
-                is CreateHomeworkUIEvent.OnDismissSavingLoading -> onDismissSavingLoading()
+                is CreateHomeworkUIEvent.OnHomeworkSavedButtonClicked -> onHomeworkSavedButtonClicked()
+                CreateHomeworkUIEvent.OnNavigateBackButtonClick -> onNavigateBackButtonClick()
+                CreateHomeworkUIEvent.OnNavigateToSubjectScreenRequest -> onNavigateToSubjectScreenRequest()
             }
         }
     }
 
-    private fun onDismissSavingLoading() {
+    private fun onNavigateToSubjectScreenRequest() {
+        _navigationEvent.trySend(CreateHomeworkScreenNavigationEvent.NavigateToCreateSubject)
+    }
+
+    private fun onNavigateBackButtonClick() {
+        _navigationEvent.trySend(CreateHomeworkScreenNavigationEvent.NavigateBack)
+    }
+
+    private fun onHomeworkSavedButtonClicked() {
+        _navigationEvent.trySend(CreateHomeworkScreenNavigationEvent.NavigateBack)
+    }
+
+    private fun onDismissPopUp(popUp: CreateHomeworkScreenPopUp) {
         _state.update {
-            it.copy(showSavingLoading = false)
+            it.copy(popUps = it.popUps - popUp)
         }
     }
 
-    private fun onDismissErrorDialog() {
-        _state.update {
-            it.copy(errorMessage = null)
-        }
-    }
-
-    private fun onDismissTimePicker() {
-        _state.update {
-            it.copy(showTimePicker = false)
-        }
-    }
-
-    private fun onDismissSubjectPicker() {
-        _state.update {
-            it.copy(showSubjectPicker = false)
-        }
-    }
-
-    private fun onDismissSaveConfirmationDialog() {
-        _state.update {
-            it.copy(showSaveConfirmationDialog = false)
-        }
-    }
-
-    private fun onDismissHomeworkSavedDialog() {
-        _state.update {
-            it.copy(showHomeworkSavedDialog = false)
-        }
-    }
-
-    private fun onDismissDatePicker() {
-        _state.update {
-            it.copy(showDatePicker = false)
-        }
-    }
-
-    private fun onDismissAttachmentPicker() {
-        _state.update {
-            it.copy(showAttachmentPicker = false)
-        }
-    }
 
     private fun onAttachmentPicked(attachments: List<Attachment>) {
         _state.update {
@@ -131,80 +105,148 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
 
     private suspend fun onAttachmentPickerClick() {
         _state.update {
-            it.copy(showAttachmentPicker = true)
+            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.AttachmentPicker)
         }
     }
 
     private suspend fun onSubjectPickerClick() {
         _state.update {
-            it.copy(showSubjectPicker = true)
+            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.SubjectPicker)
         }
     }
 
     private suspend fun onTimePickerClick() {
         _state.update {
-            it.copy(showTimePicker = true)
+            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.TimePicker)
         }
     }
 
     private suspend fun onDatePickerClick() {
         _state.update {
-            it.copy(showDatePicker = true)
+            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.DatePicker)
         }
     }
 
     private suspend fun onSaveHomeworkButtonClick() {
         _state.update {
-            it.copy(showSaveConfirmationDialog = true)
+            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.SaveConfirmationDialog)
         }
     }
 
     private fun onConfirmSaveHomeworkClick() {
-        _state.update { it.copy(showSavingLoading = true) }
         try {
+            val homework = Homework(
+                id = if (homeworkId == "-1") UUID.randomUUID().toString() else homeworkId,
+                title = _state.value.homeworkTitle.ifBlank { throw MissingRequiredFieldException.Title() },
+                dueDate = _state.value.date ?: throw MissingRequiredFieldException.Date(),
+                subjectId = _state.value.subject?.id ?: throw MissingRequiredFieldException.Subject(),
+                reminder = _state.value.time,
+                description = _state.value.description,
+                attachments = _state.value.attachments,
+                completed = _state.value.isCompleted
+            )
+
             viewModelScope.launch {
-                saveHomework()
-                _state.update {
-                    it.copy(showSavingLoading = false, showHomeworkSavedDialog = true)
+                if (homeworkId == "-1") {
+                    saveHomework(homework)
+                } else {
+                    updateHomework(homework)
                 }
             }
         } catch (e: MissingRequiredFieldException) {
-            _state.update { it.copy(showSavingLoading = false) }
             val errorMessage = when (e) {
                 is MissingRequiredFieldException.Title -> UIText.StringResource(R.string.homework_title_is_required)
                 is MissingRequiredFieldException.Date -> UIText.StringResource(R.string.due_date_is_required)
                 is MissingRequiredFieldException.Subject -> UIText.StringResource(R.string.subject_is_required)
             }
-            _state.update { it.copy(errorMessage = errorMessage) }
+            _state.update {
+                it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.Error(errorMessage))
+            }
         }
     }
 
-    private suspend fun saveHomework() {
-        val homework = Homework(
-            id = if (homeworkId == -1) 0 else homeworkId,
-            title = _state.value.homeworkTitle.ifBlank { throw MissingRequiredFieldException.Title() },
-            dueDate = _state.value.date ?: throw MissingRequiredFieldException.Date(),
-            subjectId = _state.value.subject?.id ?: throw MissingRequiredFieldException.Subject(),
-            reminder = _state.value.time,
-            description = _state.value.description,
-            attachments = _state.value.attachments,
-            completed = _state.value.isCompleted
-        )
-        val newHomeworkId = if (homeworkId == -1) {
-            eventRepository.saveHomework(homework)
-        } else {
-            eventRepository.updateHomework(homework)
-            homeworkId
-        }
+    private suspend fun updateHomework(homework: Homework) {
+        eventRepository.updateHomework(homework)
+            .collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _state.update {
+                            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.Loading)
+                        }
+                    }
+                    is Result.Error -> {
+                        _state.update {
+                            it.copy(
+                                popUps = it.popUps
+                                    .minus(CreateHomeworkScreenPopUp.Loading)
+                                    .plus(CreateHomeworkScreenPopUp.Error(UIText.DynamicString(result.throwable.message ?: "Unknown error")))
+                            )
+                        }
+                    }
+                    is Result.Success -> {
+                        _state.update {
+                            it.copy(
+                                popUps = it.popUps
+                                    .minus(CreateHomeworkScreenPopUp.Loading)
+                                    .plus(CreateHomeworkScreenPopUp.HomeworkSavedDialog)
+                            )
+                        }
+                    }
+                }
+            }
+
         if (homework.reminder != null) {
             scheduleReminder(
                 context = application.applicationContext,
                 localDateTime = LocalDateTime.of(
-                    LocalDate.ofInstant(homework.dueDate.toInstant(), ZoneId.systemDefault()),
-                    LocalTime.of(homework.reminder!!.hour, homework.reminder!!.minute)
+                    homework.dueDate,
+                    homework.reminder
                 ),
                 title = homework.title,
-                reminderId = newHomeworkId.toInt()
+                reminderId = homework.id.hashCode()
+            )
+        }
+    }
+
+    private suspend fun saveHomework(homework: Homework) {
+        eventRepository.saveHomework(homework)
+            .collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _state.update {
+                            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.Loading)
+                        }
+                    }
+                    is Result.Error -> {
+                        _state.update {
+                            it.copy(
+                                popUps = it.popUps
+                                    .minus(CreateHomeworkScreenPopUp.Loading)
+                                    .plus(CreateHomeworkScreenPopUp.Error(UIText.DynamicString(result.throwable.message ?: "Unknown error")))
+                            )
+                        }
+                    }
+                    is Result.Success -> {
+                        _state.update {
+                            it.copy(
+                                popUps = it.popUps
+                                    .minus(CreateHomeworkScreenPopUp.Loading)
+                                    .plus(CreateHomeworkScreenPopUp.HomeworkSavedDialog)
+                            )
+                        }
+                    }
+                }
+            }
+
+        if (homework.reminder != null) {
+            scheduleReminder(
+                context = application.applicationContext,
+                localDateTime = LocalDateTime.of(
+                    homework.dueDate,
+                    homework.reminder
+                ),
+                title = homework.title,
+                reminderId = homework.id.hashCode()
             )
         }
     }
@@ -221,13 +263,13 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
         }
     }
 
-    private fun onDateSelected(date: Date) {
+    private fun onDateSelected(date: LocalDate) {
         _state.update {
             it.copy(date = date)
         }
     }
 
-    private fun onTimeSelected(time: Time) {
+    private fun onTimeSelected(time: LocalTime) {
         _state.update {
             it.copy(time = time)
         }
@@ -246,29 +288,75 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
     }
 
     init {
-        if (homeworkId != -1) {
+        if (homeworkId != "-1") {
             viewModelScope.launch {
-                eventRepository.getHomeworkById(homeworkId).collect { homeworkDto ->
-                    if (homeworkDto == null) return@collect
-                    _state.update {
-                        it.copy(
-                            isEditMode = true,
-                            homeworkTitle = homeworkDto.homework.title,
-                            date = homeworkDto.homework.dueDate,
-                            time = homeworkDto.homework.reminder,
-                            subject = homeworkDto.subject,
-                            attachments = homeworkDto.homework.attachments,
-                            isCompleted = homeworkDto.homework.completed,
-                            description = homeworkDto.homework.description,
-                        )
+                eventRepository.getHomeworkById(homeworkId).collect { result ->
+                    when (result) {
+                        is Result.Loading -> {
+                            _state.update {
+                                it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.Loading)
+                            }
+                        }
+                        is Result.Error -> {
+                            _state.update {
+                                it.copy(
+                                    popUps = it.popUps
+                                        .minus(CreateHomeworkScreenPopUp.Loading)
+                                        .plus(CreateHomeworkScreenPopUp.Error(UIText.DynamicString(result.throwable.message ?: "Unknown error")))
+                                )
+                            }
+                        }
+                        is Result.Success -> {
+                            _state.update {
+                                it.copy(popUps = it.popUps.minus(CreateHomeworkScreenPopUp.Loading))
+                            }
+                            result.data.collect { homeworkDto ->
+                                if (homeworkDto == null) return@collect
+                                _state.update {
+                                    it.copy(
+                                        isEditMode = true,
+                                        homeworkTitle = homeworkDto.homework.title,
+                                        date = homeworkDto.homework.dueDate,
+                                        time = homeworkDto.homework.reminder,
+                                        subject = homeworkDto.subject,
+                                        attachments = homeworkDto.homework.attachments,
+                                        isCompleted = homeworkDto.homework.completed,
+                                        description = homeworkDto.homework.description,
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
         getAllSubjectJob = viewModelScope.launch {
-            subjectRepository.getAllSubject().collect { subjects ->
-                _state.update {
-                    it.copy(subjects = subjects)
+            subjectRepository.getAllSubject().collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _state.update {
+                            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.Loading)
+                        }
+                    }
+                    is Result.Error -> {
+                        _state.update {
+                            it.copy(
+                                popUps = it.popUps
+                                    .minus(CreateHomeworkScreenPopUp.Loading)
+                                    .plus(CreateHomeworkScreenPopUp.Error(UIText.DynamicString(result.throwable.message ?: "Unknown error")))
+                            )
+                        }
+                    }
+                    is Result.Success -> {
+                        _state.update {
+                            it.copy(popUps = it.popUps.minus(CreateHomeworkScreenPopUp.Loading))
+                        }
+                        result.data.collect { subjects ->
+                            _state.update {
+                                it.copy(subjects = subjects)
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -25,7 +25,7 @@ class HomeworkService @Inject constructor(
 ) {
 
     companion object {
-        private const val HOMEWORK_COLLECTION_ID = "homework"
+        const val HOMEWORK_COLLECTION_ID = "homework"
     }
 
     private val db by lazy { Firebase.firestore }

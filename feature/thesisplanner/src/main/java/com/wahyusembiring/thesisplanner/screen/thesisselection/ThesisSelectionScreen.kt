@@ -64,7 +64,7 @@ fun ThesisSelectionScreen(
 private fun ThesisSelectionScreen(
     state: ThesisSelectionScreenUIState,
     onUIEvent: (ThesisSelectionScreenUIEvent) -> Unit,
-    onNavigateToThesisPlanner: (thesisId: Int) -> Unit,
+    onNavigateToThesisPlanner: (thesisId: String) -> Unit,
     onHamburgerMenuClick: () -> Unit,
 ) {
     val context = LocalContext.current

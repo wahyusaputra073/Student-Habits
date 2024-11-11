@@ -84,24 +84,3 @@ private fun ColumnScope.SubjectPickerContent(
         Text(text = stringResource(id = R.string.cancel))
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-private fun SubjectPickerPreview() {
-    Column {
-        SubjectPickerContent(
-            onSubjectSelected = {},
-            onCancelButtonClicked = {},
-            navigateToCreateSubjectScreen = {},
-            subjects = listOf(
-                Subject(
-                    name = "Math",
-                    color = Color.Red,
-                    room = "Room 1",
-                    description = "Math description",
-                    lecturerId = 1
-                )
-            )
-        )
-    }
-}

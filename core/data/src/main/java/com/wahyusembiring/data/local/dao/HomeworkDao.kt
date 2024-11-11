@@ -27,6 +27,9 @@ interface HomeworkDao {
     @Upsert(entity = Homework::class)
     suspend fun upsertHomework(homework: Homework)
 
+    @Upsert(entity = Homework::class)
+    suspend fun upsertHomework(homeworks: List<Homework>)
+
     @Update(entity = Homework::class)
     suspend fun updateHomework(homework: Homework)
 

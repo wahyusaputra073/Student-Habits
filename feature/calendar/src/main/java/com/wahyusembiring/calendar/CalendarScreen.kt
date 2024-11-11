@@ -1,6 +1,5 @@
 package com.wahyusembiring.calendar
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,11 +42,10 @@ import com.wahyusembiring.common.navigation.Screen
 import com.wahyusembiring.common.util.CollectAsOneTimeEvent
 import com.wahyusembiring.data.model.ExamWithSubject
 import com.wahyusembiring.data.model.HomeworkWithSubject
-import com.wahyusembiring.data.model.entity.Exam
-import com.wahyusembiring.data.model.entity.Homework
 import com.wahyusembiring.data.model.entity.Reminder
-import com.wahyusembiring.data.model.entity.Subject
 import com.wahyusembiring.ui.component.eventcard.EventCard
+import com.wahyusembiring.ui.component.popup.alertdialog.error.ErrorAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.loading.LoadingAlertDialog
 import com.wahyusembiring.ui.component.topappbar.TopAppBar
 import com.wahyusembiring.ui.theme.spacing
 import com.wahyusembiring.ui.util.adjustHSL
@@ -69,7 +66,7 @@ fun CalendarScreen(
     navController: NavHostController,
     drawerState: DrawerState
 ) {
-    val state = viewModel.state.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
 
     CollectAsOneTimeEvent(viewModel.navigationEvent) {
@@ -78,7 +75,7 @@ fun CalendarScreen(
                 navController.navigate(Screen.CreateHomework(it.homeworkId))
             }
             is CalendarScreenNavigationEvent.NavigateToExamDetail -> {
-                navController.navigate(Screen.CreateExam(it.examkId))
+                navController.navigate(Screen.CreateExam(it.examId))
             }
             is CalendarScreenNavigationEvent.NavigateToReminderDetail -> {
                 navController.navigate(Screen.CreateReminder(it.reminderId))
@@ -87,12 +84,32 @@ fun CalendarScreen(
     }
 
     CalendarScreen(
-        state = state.value,
+        state = state,
         onUIEvent = viewModel::onUIEvent,
         onHamburgerMenuClick = {
             coroutineScope.launch { drawerState.open() }
         }
     )
+
+    for (popUp in state.popUps) {
+        when (popUp) {
+            is CalendarScreenPopUp.Loading -> {
+                LoadingAlertDialog(stringResource(R.string.loading))
+            }
+            is CalendarScreenPopUp.Error -> {
+                ErrorAlertDialog(
+                    message = popUp.message.asString(),
+                    buttonText = stringResource(R.string.ok),
+                    onButtonClicked = {
+                        viewModel.onUIEvent(CalendarScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(CalendarScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                )
+            }
+        }
+    }
 
 }
 

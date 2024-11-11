@@ -90,7 +90,9 @@ fun LecturerCard(
         },
         trailingContent = {
             IconButton(
-                onClick = {expanded = true}
+                onClick = {
+                    expanded = true
+                }
             ) {
                 Icon(
                     painter = painterResource(id = com.wahyusembiring.ui.R.drawable.ic_more_vertical),

@@ -1,11 +1,12 @@
 package com.wahyusembiring.data.repository
 
+import com.wahyusembiring.data.Result
 import kotlinx.coroutines.flow.Flow
 
 interface DataStoreRepository {
 
-    suspend fun saveOnBoardingState(completed: Boolean)
+    fun saveOnBoardingState(completed: Boolean): Flow<Result<Unit>>
 
-    fun readOnBoardingState(): Flow<Boolean>
+    fun readOnBoardingState(): Flow<Result<Flow<Boolean>>>
 
 }

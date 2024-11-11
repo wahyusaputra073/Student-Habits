@@ -18,22 +18,22 @@ sealed class Screen {
     data object Overview : Screen()
 
     @Serializable
-    data class CreateHomework(val homeworkId: Int = -1) : Screen()
+    data class CreateHomework(val homeworkId: String = "-1") : Screen()
 
     @Serializable
-    data class CreateReminder(val reminderId: Int = -1) : Screen()
+    data class CreateReminder(val reminderId: String = "-1") : Screen()
 
     @Serializable
-    data class CreateExam(val examId: Int = -1) : Screen()
+    data class CreateExam(val examId: String = "-1") : Screen()
 
     @Serializable
-    data class CreateSubject(val subjectId: Int = -1) : Screen()
+    data class CreateSubject(val subjectId: String = "-1") : Screen()
 
     @Serializable
     data object ThesisSelection : Screen()
 
     @Serializable
-    data class ThesisPlanner(val thesisId: Int) : Screen()
+    data class ThesisPlanner(val thesisId: String) : Screen()
 
     @Serializable
     data object Calendar : Screen()
@@ -48,7 +48,7 @@ sealed class Screen {
     data object Lecture : Screen()
 
     @Serializable
-    data class AddLecturer(val lecturerId: Int = -1) : Screen()
+    data class AddLecturer(val lecturerId: String = "-1") : Screen()
 
     @Serializable
     data object Settings : Screen()

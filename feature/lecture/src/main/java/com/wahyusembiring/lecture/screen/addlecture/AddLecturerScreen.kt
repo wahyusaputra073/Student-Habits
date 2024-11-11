@@ -30,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.wahyusembiring.common.util.CollectAsOneTimeEvent
 import com.wahyusembiring.lecture.R
 import com.wahyusembiring.ui.component.emailinput.EmailInput
 import com.wahyusembiring.ui.component.multiaddressinput.MultiAddressInput
@@ -38,6 +39,7 @@ import com.wahyusembiring.ui.component.phonenumberinput.PhoneNumberInput
 import com.wahyusembiring.ui.component.popup.alertdialog.confirmation.ConfirmationAlertDialog
 import com.wahyusembiring.ui.component.popup.alertdialog.error.ErrorAlertDialog
 import com.wahyusembiring.ui.component.popup.alertdialog.information.InformationAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.loading.LoadingAlertDialog
 import com.wahyusembiring.ui.component.profilepicturepicker.ProfilePicturePicker
 import com.wahyusembiring.ui.component.websiteinput.WebsiteInput
 import com.wahyusembiring.ui.theme.spacing
@@ -49,23 +51,78 @@ fun AddLectureScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    CollectAsOneTimeEvent(viewModel.navigationEvent) {  event ->
+        when (event) {
+            AddLecturerScreenNavigationEvent.NavigateBack -> {
+                navController.navigateUp()
+            }
+        }
+    }
+
     AddLectureScreen(
         state = state,
         onUIEvent = viewModel::onUIEvent,
-        navController = navController,
-        navigateUp = {
-            navController.navigateUp()
-        }
     )
+
+    for (popUp in state.popUps) {
+        when (popUp) {
+            is AddLecturerScreenPopUp.Loading -> {
+                LoadingAlertDialog(stringResource(R.string.loading))
+            }
+            is AddLecturerScreenPopUp.Error -> {
+                ErrorAlertDialog(
+                    message = popUp.message.asString(),
+                    buttonText = stringResource(R.string.ok),
+                    onButtonClicked = {
+                        viewModel.onUIEvent(AddLecturerScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(AddLecturerScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                )
+            }
+            is AddLecturerScreenPopUp.LecturerSaved -> {
+                InformationAlertDialog(
+                    title = stringResource(R.string.success),
+                    message = stringResource(R.string.lecture_saved_successfully),
+                    buttonText = stringResource(R.string.ok),
+                    onButtonClicked = {
+                        viewModel.onUIEvent(AddLecturerScreenUIEvent.OnDismissPopUp(popUp))
+                        viewModel.onUIEvent(AddLecturerScreenUIEvent.OnLectureSavedOkButtonClick)
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(AddLecturerScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                )
+            }
+            AddLecturerScreenPopUp.SaveLecturerConfirmationDialog -> {
+                ConfirmationAlertDialog(
+                    title = "Save Lecture",
+                    message = "Are you sure you want to save this lecture?",
+                    positiveButtonText = stringResource(R.string.save),
+                    onPositiveButtonClick = {
+                        viewModel.onUIEvent(AddLecturerScreenUIEvent.OnDismissPopUp(popUp))
+                        viewModel.onUIEvent(AddLecturerScreenUIEvent.OnSaveConfirmationDialogConfirm)
+                    },
+                    negativeButtonText = stringResource(R.string.cancel),
+                    onNegativeButtonClick = {
+                        viewModel.onUIEvent(AddLecturerScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(AddLecturerScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                )
+            }
+        }
+    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddLectureScreen(
-    state: AddLecturerScreenUItate,
+    state: AddLecturerScreenUIState,
     onUIEvent: (AddLecturerScreenUIEvent) -> Unit,
-    navController: NavController,
-    navigateUp: () -> Unit
 ) {
 
     val context = LocalContext.current
@@ -76,7 +133,7 @@ private fun AddLectureScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = {
-                            onUIEvent(AddLecturerScreenUIEvent.OnBackButtonClick(navController))
+                            onUIEvent(AddLecturerScreenUIEvent.OnBackButtonClick)
                         }
                     ) {
                         Icon(
@@ -209,44 +266,5 @@ private fun AddLectureScreen(
 
         }
     }
-    if (state.showSaveConfirmationDialog) {
-        ConfirmationAlertDialog(
-            onPositiveButtonClick = {
-                onUIEvent(AddLecturerScreenUIEvent.OnSaveConfirmationDialogConfirm)
-            },
-            onNegativeButtonClick = {
-                onUIEvent(AddLecturerScreenUIEvent.OnSaveConfirmationDialogCancel)
-            },
-            onDismissRequest = {
-                onUIEvent(AddLecturerScreenUIEvent.OnSaveConfirmationDialogDismiss)
-            },
-            title = stringResource(R.string.save_lecture),
-            message = stringResource(R.string.are_you_sure_you_want_to_save_this_lecture),
-            positiveButtonText = stringResource(R.string.save),
-            negativeButtonText = stringResource(R.string.cancel),
-        )
-    }
-    if (state.showLectureSavedDialog) {
-        InformationAlertDialog(
-            onButtonClicked = {
-                onUIEvent(AddLecturerScreenUIEvent.OnLecturerSavedDialogDismiss)
-                navigateUp()
-            },
-            buttonText = stringResource(id = R.string.ok),
-            title = stringResource(R.string.lecture_saved),
-            message = "",
-            onDismissRequest = {
-                onUIEvent(AddLecturerScreenUIEvent.OnLecturerSavedDialogDismiss)
-            },
-        )
-    }
-    if (state.errorMessage != null) {
-        ErrorAlertDialog(
-            message = state.errorMessage.asString(),
-            buttonText = stringResource(R.string.ok),
-            onDismissRequest = {
-                onUIEvent(AddLecturerScreenUIEvent.OnErrorDialogDismiss)
-            }
-        )
-    }
+
 }

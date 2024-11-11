@@ -3,6 +3,7 @@ package com.wahyusembiring.subject.screen.create
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.wahyusembiring.data.Result
 import com.wahyusembiring.data.model.entity.Lecturer
 import com.wahyusembiring.data.model.entity.Subject
 import com.wahyusembiring.data.repository.LecturerRepository
@@ -24,38 +25,54 @@ import kotlinx.coroutines.launch
 class CreateSubjectViewModel @AssistedInject constructor(
     private val subjectRepository: SubjectRepository,
     private val lecturerRepository: LecturerRepository,
-    @Assisted private val subjectId: Int
+    @Assisted private val subjectId: String
 ) : ViewModel() {
 
     @AssistedFactory
     interface Factory {
-        fun create(subjectId: Int = -1): CreateSubjectViewModel
+        fun create(subjectId: String = "-1"): CreateSubjectViewModel
     }
 
     private val _state = MutableStateFlow(CreateSubjectScreenUIState())
     val state = _state.asStateFlow()
 
     init {
-        if (subjectId != -1) {
+        if (subjectId != "-1") {
             _state.update { it.copy(isEditMode = true) }
         }
         viewModelScope.launch {
             launch {
-                lecturerRepository.getAllLecturer().collect { lectures ->
-                    _state.update { it.copy(lecturers = lectures) }
+                lecturerRepository.getAllLecturer().collect { result ->
+                    when (result) {
+                        is Result.Loading -> {}
+                        is Result.Error -> { throw result.throwable }
+                        is Result.Success -> {
+                            result.data.collect { lectures ->
+                                _state.update { it.copy(lecturers = lectures) }
+                            }
+                        }
+                    }
                 }
             }
             launch {
-                if (subjectId != -1) {
-                    subjectRepository.getSubjectWithLecturerById(subjectId).collect { subjectWithLecturer ->
-                        _state.update {
-                            it.copy(
-                                name = subjectWithLecturer?.subject?.name ?: "",
-                                color = subjectWithLecturer?.subject?.color ?: Color.Unspecified,
-                                room = subjectWithLecturer?.subject?.room ?: "",
-                                description = subjectWithLecturer?.subject?.description ?: "",
-                                lecturer = subjectWithLecturer?.lecturer,
-                            )
+                if (subjectId != "-1") {
+                    subjectRepository.getSubjectWithLecturerById(subjectId).collect { result ->
+                        when (result) {
+                            is Result.Loading -> {}
+                            is Result.Error -> { throw result.throwable }
+                            is Result.Success -> {
+                                result.data.collect { subjectWithLecturer ->
+                                    _state.update {
+                                        it.copy(
+                                            name = subjectWithLecturer?.subject?.name ?: "",
+                                            color = subjectWithLecturer?.subject?.color ?: Color.Unspecified,
+                                            room = subjectWithLecturer?.subject?.room ?: "",
+                                            description = subjectWithLecturer?.subject?.description ?: "",
+                                            lecturer = subjectWithLecturer?.lecturer,
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -141,9 +158,21 @@ class CreateSubjectViewModel @AssistedInject constructor(
             lecturerId = _state.value.lecturer?.id ?: throw MissingRequiredFieldException.Lecture()
         )
         if (state.value.isEditMode) {
-            subjectRepository.updateSubject(subject.copy(id = subjectId))
+            subjectRepository.updateSubject(subject.copy(id = subjectId)).collect {
+                when (it) {
+                    is Result.Loading -> {}
+                    is Result.Error -> { throw it.throwable }
+                    is Result.Success -> {}
+                }
+            }
         } else {
-            subjectRepository.saveSubject(subject)
+            subjectRepository.saveSubject(subject).collect {
+                when (it) {
+                    is Result.Loading -> {}
+                    is Result.Error -> { throw it.throwable }
+                    is Result.Success -> {}
+                }
+            }
         }
     }
 

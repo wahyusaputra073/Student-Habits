@@ -40,6 +40,17 @@ class ThesisService @Inject constructor(
         return query.documents.map { it.toThesisWithTask(converter) }
     }
 
+    suspend fun getThesisById(id: String): ThesisWithTask {
+        val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
+        val query = db
+            .collection(USER_COLLECTION_ID)
+            .document(user.id)
+            .collection(THESIS_COLLECTION_ID)
+            .document(id).get().await()
+
+        return query.toThesisWithTask(converter)
+    }
+
     suspend fun saveNewThesis(thesis: Thesis) {
         val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
         val thesisWithTask = ThesisWithTask(thesis, emptyList())

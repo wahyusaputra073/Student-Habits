@@ -28,12 +28,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.wahyusembiring.common.navigation.Screen
+import com.wahyusembiring.common.util.CollectAsOneTimeEvent
 import com.wahyusembiring.data.model.ExamWithSubject
 import com.wahyusembiring.data.model.HomeworkWithSubject
 import com.wahyusembiring.data.model.entity.Reminder
 import com.wahyusembiring.ui.component.eventcard.EventCard
 import com.wahyusembiring.ui.component.scoredialog.ScoreDialog
 import com.wahyusembiring.ui.component.floatingactionbutton.HomeworkExamAndReminderFAB
+import com.wahyusembiring.ui.component.popup.alertdialog.error.ErrorAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.loading.LoadingAlertDialog
 import com.wahyusembiring.ui.component.topappbar.TopAppBar
 import com.wahyusembiring.ui.theme.HabitTheme
 import com.wahyusembiring.ui.theme.spacing
@@ -49,16 +52,72 @@ fun OverviewScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
 
+    CollectAsOneTimeEvent(viewModel.navigationEvent) {  event ->
+        when (event) {
+            is OverviewScreenNavigationEvent.NavigateToExam -> {
+                navController.navigate(Screen.CreateExam(event.examId ?: "-1"))
+            }
+            is OverviewScreenNavigationEvent.NavigateToHomework -> {
+                navController.navigate(Screen.CreateHomework(event.homeworkId ?: "-1"))
+            }
+            is OverviewScreenNavigationEvent.NavigateToReminder -> {
+                navController.navigate(Screen.CreateReminder(event.reminderId ?: "-1"))
+            }
+        }
+    }
+
+    CollectAsOneTimeEvent(viewModel.oneTimeEvent) { event ->
+        when (event) {
+            is OverviewScreenUIEvent.OnHamburgerMenuClick -> {
+                coroutineScope.launch {
+                    drawerState.open()
+                }
+            }
+            else -> Unit
+        }
+    }
+
     OverviewScreen(
         state = state,
         onUIEvent = viewModel::onUIEvent,
-        onHamburgerMenuClick = {
-            coroutineScope.launch { drawerState.open() }
-        },
-        onNavigateTo = {
-            navController.navigate(it)
-        }
     )
+
+    for (popUp in state.popUps) {
+        when (popUp) {
+            is OverviewScreenPopUp.Error -> {
+                ErrorAlertDialog(
+                    message = popUp.errorMessage,
+                    buttonText = stringResource(R.string.ok),
+                    onButtonClicked = {
+                        viewModel.onUIEvent(OverviewScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(OverviewScreenUIEvent.OnDismissPopUp(popUp))
+                    }
+                )
+            }
+            is OverviewScreenPopUp.ExamScoreInputDialog -> {
+                ScoreDialog(
+                    initialScore = popUp.exam.exam.score ?: 0,
+                    onMarkNotDoneYet = {
+                        viewModel.onUIEvent(OverviewScreenUIEvent.OnMarkExamAsUndone(popUp.exam))
+                    },
+                    onScoreConfirmed = {
+                        viewModel.onUIEvent(OverviewScreenUIEvent.OnExamScorePicked(popUp.exam, it))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(OverviewScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                )
+            }
+            is OverviewScreenPopUp.Loading -> {
+                LoadingAlertDialog(
+                    message = stringResource(R.string.loading)
+                )
+            }
+        }
+    }
+
 }
 
 
@@ -67,8 +126,6 @@ private fun OverviewScreen(
     modifier: Modifier = Modifier,
     state: OverviewScreenUIState,
     onUIEvent: (OverviewScreenUIEvent) -> Unit,
-    onHamburgerMenuClick: () -> Unit,
-    onNavigateTo: (Screen) -> Unit,
 ) {
     var fabExpanded by remember { mutableStateOf(false) }
 
@@ -76,7 +133,9 @@ private fun OverviewScreen(
         topBar = {
             TopAppBar(
                 title = stringResource(R.string.overview),
-                onMenuClick = onHamburgerMenuClick
+                onMenuClick = {
+                    onUIEvent(OverviewScreenUIEvent.OnHamburgerMenuClick)
+                }
             )
         },
         floatingActionButton = {
@@ -84,9 +143,15 @@ private fun OverviewScreen(
                 isExpanded = fabExpanded,
                 onClick = { fabExpanded = !fabExpanded },
                 onDismiss = { fabExpanded = false },
-                onReminderFabClick = { onNavigateTo(Screen.CreateReminder()) },
-                onExamFabClick = { onNavigateTo(Screen.CreateExam()) },
-                onHomeworkFabClick = { onNavigateTo(Screen.CreateHomework()) },
+                onReminderFabClick = {
+                    onUIEvent(OverviewScreenUIEvent.OnReminderFABClick)
+                },
+                onExamFabClick = {
+                    onUIEvent(OverviewScreenUIEvent.OnExamFABClick)
+                },
+                onHomeworkFabClick = {
+                    onUIEvent(OverviewScreenUIEvent.OnHomeworkFABClick)
+                },
             )
         }
     ) {
@@ -94,7 +159,6 @@ private fun OverviewScreen(
             modifier = modifier.padding(it),
             state = state,
             onUIEvent = onUIEvent,
-            onNavigateTo = onNavigateTo
         )
     }
 }
@@ -106,7 +170,6 @@ private fun OverviewScreenMainContent(
     modifier: Modifier = Modifier,
     state: OverviewScreenUIState,
     onUIEvent: (OverviewScreenUIEvent) -> Unit,
-    onNavigateTo: (Screen) -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -128,21 +191,7 @@ private fun OverviewScreenMainContent(
                     vertical = MaterialTheme.spacing.Small
                 ),
                 onEventClick = { event ->
-                    when (event) {
-                        is HomeworkWithSubject -> {
-                            onNavigateTo(Screen.CreateHomework(event.homework.id))
-                        }
-
-                        is ExamWithSubject -> {
-                            onNavigateTo(Screen.CreateExam(event.exam.id))
-                        }
-
-                        is Reminder -> {
-                            onNavigateTo(Screen.CreateReminder(event.id))
-                        }
-
-                        else -> Unit
-                    }
+                    onUIEvent(OverviewScreenUIEvent.OnEventClick(event))
                 },
                 onDeletedEventClick = { event ->
                     onUIEvent(OverviewScreenUIEvent.OnDeleteEvent(event))
@@ -153,27 +202,6 @@ private fun OverviewScreenMainContent(
                 },
             )
         }
-    }
-    if (state.scoreDialog != null) {
-        ScoreDialog(
-            initialScore = state.scoreDialog.initialScore,
-            onMarkNotDoneYet = {
-                onUIEvent(
-                    OverviewScreenUIEvent.OnMarkExamAsUndone(state.scoreDialog.exam)
-                )
-            },
-            onDismissRequest = {
-                onUIEvent(
-                    OverviewScreenUIEvent
-                        .OnExamScoreDialogStateChange(null)
-                )
-            },
-            onScoreConfirmed = {
-                onUIEvent(
-                    OverviewScreenUIEvent.OnExamScorePicked(state.scoreDialog.exam, it)
-                )
-            }
-        )
     }
 }
 

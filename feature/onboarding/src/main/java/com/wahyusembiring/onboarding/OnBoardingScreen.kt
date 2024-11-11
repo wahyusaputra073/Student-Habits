@@ -24,6 +24,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -33,6 +34,8 @@ import com.wahyusembiring.common.navigation.Screen
 import com.wahyusembiring.common.util.CollectAsOneTimeEvent
 import com.wahyusembiring.onboarding.component.PageIndicator
 import com.wahyusembiring.onboarding.model.OnBoardingModel
+import com.wahyusembiring.ui.component.popup.alertdialog.error.ErrorAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.loading.LoadingAlertDialog
 import com.wahyusembiring.ui.theme.spacing
 import kotlinx.coroutines.launch
 
@@ -60,6 +63,26 @@ fun OnBoardingScreen(
         state = state,
         onUIEvent = viewModel::onUIEvent
     )
+
+    for (popUp in state.popUps) {
+        when (popUp) {
+            is OnBoardingScreenPopUp.Loading -> {
+                LoadingAlertDialog(stringResource(R.string.loading))
+            }
+            is OnBoardingScreenPopUp.Error -> {
+                ErrorAlertDialog(
+                    message = popUp.message.asString(),
+                    buttonText = stringResource(R.string.ok),
+                    onButtonClicked = {
+                        viewModel.onUIEvent(OnBoardingScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(OnBoardingScreenUIEvent.OnDismissPopUp(popUp))
+                    }
+                )
+            }
+        }
+    }
 
 }
 
@@ -103,7 +126,7 @@ private fun OnBoardingScreen(
                             }
                         }
                     ) {
-                        Text(text = "Back")
+                        Text(text = stringResource(R.string.back))
                     }
                 }
                 PageIndicator(
@@ -123,7 +146,13 @@ private fun OnBoardingScreen(
                         }
                     }
                 ) {
-                    Text(text = if (pagerState.currentPage == state.models.size - 1) "Get Started!" else "Next")
+                    Text(
+                        text = if (pagerState.currentPage == state.models.size - 1) {
+                            stringResource(R.string.get_started)
+                        } else {
+                            stringResource(R.string.next)
+                        }
+                    )
                 }
             }
         }

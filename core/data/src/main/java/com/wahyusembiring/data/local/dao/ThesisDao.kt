@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.room.Upsert
 import com.wahyusembiring.data.model.entity.Thesis
 import com.wahyusembiring.data.model.ThesisWithTask
 import kotlinx.coroutines.flow.Flow
@@ -27,6 +28,12 @@ interface ThesisDao {
 
     @Insert(entity = Thesis::class)
     suspend fun insertThesis(thesis: List<Thesis>): List<Long>
+
+    @Upsert(entity = Thesis::class)
+    suspend fun upsertThesis(thesis: Thesis)
+
+    @Upsert(entity = Thesis::class)
+    suspend fun upsertThesis(thesis: List<Thesis>)
 
     @Update(entity = Thesis::class)
     suspend fun updateThesis(thesis: Thesis)

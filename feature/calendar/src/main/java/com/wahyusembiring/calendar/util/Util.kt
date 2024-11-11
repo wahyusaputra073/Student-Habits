@@ -18,8 +18,9 @@ fun List<Any>.getEventsByDate(date: LocalDate): List<Any> {
             is Reminder -> it.date
             else -> throw IllegalArgumentException("Invalid event type")
         }
-        val eventLocalDate =
-            Instant.ofEpochMilli(eventDate.time).atZone(ZoneId.systemDefault()).toLocalDate()
+//        val eventLocalDate =
+//            Instant.ofEpochMilli(eventDate.time).atZone(ZoneId.systemDefault()).toLocalDate()
+        val eventLocalDate = eventDate
         eventLocalDate == date
     }
 }

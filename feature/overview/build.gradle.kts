@@ -4,6 +4,9 @@ plugins {
 
 android {
     namespace = "com.wahyusembiring.overview"
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+    }
 }
 
 dependencies {
@@ -12,4 +15,7 @@ dependencies {
     // Coil
     implementation(libs.coil.compose)
     implementation(libs.coil.svg)
+
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.wahyusembiring.common.navigation.Screen
 import com.wahyusembiring.common.util.launch
+import com.wahyusembiring.data.Result
 import com.wahyusembiring.data.repository.ThesisRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,9 +21,17 @@ class ThesisSelectionScreenViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            thesisRepository.getAllThesis().collect { listOfThesis ->
-                _uiState.update {
-                    it.copy(listOfThesis = listOfThesis)
+            thesisRepository.getAllThesis().collect { result ->
+                when (result) {
+                    is Result.Loading -> {}
+                    is Result.Error -> { throw result.throwable }
+                    is Result.Success -> {
+                        result.data.collect { listOfThesis ->
+                            _uiState.update {
+                                it.copy(listOfThesis = listOfThesis)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -49,16 +58,28 @@ class ThesisSelectionScreenViewModel @Inject constructor(
 
 
     private suspend fun onDeleteThesisClick(thesis: Thesis) {
-        thesisRepository.deleteThesis(thesis.thesis)
+        thesisRepository.deleteThesis(thesis.thesis).collect { result ->
+            when (result) {
+                is Result.Loading -> {}
+                is Result.Error -> { throw result.throwable }
+                is Result.Success -> {}
+            }
+        }
     }
 
-    private suspend fun onCreateNewThesisClick(onNavigateToThesisPlanner: (thesisId: Int) -> Unit) {
+    private suspend fun onCreateNewThesisClick(onNavigateToThesisPlanner: (thesisId: String) -> Unit) {
         val newThesis = com.wahyusembiring.data.model.entity.Thesis(
             title = "Untitled Thesis",
             articles = emptyList()
         )
-        val newThesisId = thesisRepository.saveNewThesis(newThesis)
-        onNavigateToThesisPlanner(newThesisId.toInt())
+        thesisRepository.saveNewThesis(newThesis).collect { result ->
+            when (result) {
+                is Result.Loading -> {}
+                is Result.Error -> { throw result.throwable }
+                is Result.Success -> {}
+            }
+        }
+        onNavigateToThesisPlanner(newThesis.id)
     }
 
 }

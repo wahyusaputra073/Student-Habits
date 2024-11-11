@@ -21,7 +21,7 @@ class LecturerService @Inject constructor(
 ) {
 
     companion object {
-        private const val LECTURER_COLLECTION_ID = "lecturer"
+        const val LECTURER_COLLECTION_ID = "lecturer"
     }
 
     private val db by lazy { Firebase.firestore }
@@ -81,6 +81,16 @@ class LecturerService @Inject constructor(
             .document(user.id)
             .collection(LECTURER_COLLECTION_ID)
             .document(lecturer.id).set(newLecturer)
+            .await()
+    }
+
+    suspend fun deleteLecturerById(id: String) {
+        val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
+        db.collection(USER_COLLECTION_ID)
+            .document(user.id)
+            .collection(LECTURER_COLLECTION_ID)
+            .document(id)
+            .delete()
             .await()
     }
 

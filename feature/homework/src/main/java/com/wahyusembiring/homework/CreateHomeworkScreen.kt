@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.wahyusembiring.common.navigation.Screen
+import com.wahyusembiring.common.util.CollectAsOneTimeEvent
 import com.wahyusembiring.common.util.getNotificationReminderPermission
 import com.wahyusembiring.ui.component.button.AddAttachmentButton
 import com.wahyusembiring.ui.component.button.AddDateButton
@@ -33,7 +34,9 @@ import com.wahyusembiring.ui.component.button.AddReminderButton
 import com.wahyusembiring.ui.component.button.AddSubjectButton
 import com.wahyusembiring.ui.component.modalbottomsheet.component.NavigationAndActionButtonHeader
 import com.wahyusembiring.ui.component.popup.alertdialog.confirmation.ConfirmationAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.error.ErrorAlertDialog
 import com.wahyusembiring.ui.component.popup.alertdialog.information.InformationAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.loading.LoadingAlertDialog
 import com.wahyusembiring.ui.component.popup.picker.attachmentpicker.AttachmentPicker
 import com.wahyusembiring.ui.component.popup.picker.datepicker.DatePicker
 import com.wahyusembiring.ui.component.popup.picker.subjectpicker.SubjectPicker
@@ -41,7 +44,12 @@ import com.wahyusembiring.ui.component.popup.picker.timepicker.TimePicker
 import com.wahyusembiring.ui.theme.HabitTheme
 import com.wahyusembiring.ui.theme.spacing
 import com.wahyusembiring.ui.util.checkForPermissionOrLaunchPermissionLauncher
+import java.lang.Error
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateHomeworkScreen(
     viewModel: CreateHomeworkScreenViewModel,
@@ -49,25 +57,130 @@ fun CreateHomeworkScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    CollectAsOneTimeEvent(viewModel.navigationEvent) { event ->
+        when (event) {
+            CreateHomeworkScreenNavigationEvent.NavigateBack -> {
+                navController.navigateUp()
+            }
+            CreateHomeworkScreenNavigationEvent.NavigateToCreateSubject -> {
+                navController.navigate(Screen.CreateSubject())
+            }
+        }
+    }
+
     CreateHomeworkScreen(
         modifier = Modifier,
         state = state,
-        onUIEvent = viewModel::onUIEvent,
-        onNavigateBack = { navController.navigateUp() },
-        onNavigateToCreateSubjectScreen = {
-            navController.navigate(Screen.CreateSubject())
-        }
+        onUIEvent = viewModel::onUIEvent
     )
+
+    for (popUp in state.popUps) {
+        when (popUp) {
+            is CreateHomeworkScreenPopUp.AttachmentPicker -> {
+                AttachmentPicker(
+                    onDismissRequest = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onAttachmentsConfirmed = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDismissPopUp(popUp))
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnAttachmentPicked(it))
+                    }
+                )
+            }
+            is CreateHomeworkScreenPopUp.DatePicker -> {
+                DatePicker(
+                    onDismissRequest = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDateSelected = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDismissPopUp(popUp))
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDatePicked(it))
+                    }
+                )
+            }
+            is CreateHomeworkScreenPopUp.Error -> {
+                ErrorAlertDialog(
+                    message = popUp.errorMessage.asString(),
+                    buttonText = stringResource(R.string.ok),
+                    onDismissRequest = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onButtonClicked = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDismissPopUp(popUp))
+                    },
+                )
+            }
+            CreateHomeworkScreenPopUp.HomeworkSavedDialog -> {
+                InformationAlertDialog(
+                    title = stringResource(id = R.string.success),
+                    message = stringResource(id = R.string.homework_saved),
+                    buttonText = stringResource(id = R.string.ok),
+                    onButtonClicked = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDismissPopUp(popUp))
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnHomeworkSavedButtonClicked)
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDismissPopUp(popUp))
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnHomeworkSavedButtonClicked)
+                    },
+                )
+            }
+            CreateHomeworkScreenPopUp.Loading -> {
+                LoadingAlertDialog(stringResource(R.string.loading))
+            }
+            CreateHomeworkScreenPopUp.SaveConfirmationDialog -> {
+                ConfirmationAlertDialog(
+                    title = stringResource(id = R.string.save_homework),
+                    message = stringResource(id = R.string.are_you_sure_you_want_to_save_this_homework),
+                    positiveButtonText = stringResource(id = R.string.save),
+                    onPositiveButtonClick = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDismissPopUp(popUp))
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnConfirmSaveHomeworkClick)
+                    },
+                    negativeButtonText = stringResource(id = R.string.cancel),
+                    onNegativeButtonClick = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDismissPopUp(popUp))
+                    },
+                )
+            }
+            CreateHomeworkScreenPopUp.SubjectPicker -> {
+                SubjectPicker(
+                    subjects = state.subjects,
+                    onDismissRequest = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onSubjectSelected = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDismissPopUp(popUp))
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnSubjectPicked(it))
+                    },
+                    navigateToCreateSubjectScreen = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnNavigateToSubjectScreenRequest)
+                    }
+                )
+            }
+            CreateHomeworkScreenPopUp.TimePicker -> {
+                TimePicker(
+                    onDismissRequest = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onTimeSelected = {
+                        viewModel.onUIEvent(CreateHomeworkUIEvent.OnTimePicked(it))
+                    }
+                )
+            }
+        }
+    }
+
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CreateHomeworkScreen(
     modifier: Modifier = Modifier,
     state: CreateHomeworkScreenUIState,
     onUIEvent: (CreateHomeworkUIEvent) -> Unit,
-    onNavigateBack: () -> Unit,
-    onNavigateToCreateSubjectScreen: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -91,7 +204,9 @@ private fun CreateHomeworkScreen(
                 .fillMaxSize()
         ) {
             NavigationAndActionButtonHeader(
-                onNavigationButtonClicked = onNavigateBack,
+                onNavigationButtonClicked = {
+                    onUIEvent(CreateHomeworkUIEvent.OnNavigateBackButtonClick)
+                },
                 onActionButtonClicked = {
                     onUIEvent(CreateHomeworkUIEvent.OnSaveHomeworkButtonClicked)
                 },
@@ -171,69 +286,5 @@ private fun CreateHomeworkScreen(
         }
     }
 
-    if (state.showSaveConfirmationDialog) {
-        ConfirmationAlertDialog(
-            title = stringResource(id = R.string.save_homework),
-            message = stringResource(id = R.string.are_you_sure_you_want_to_save_this_homework),
-            positiveButtonText = stringResource(id = R.string.save),
-            onPositiveButtonClick = {
-                onUIEvent(CreateHomeworkUIEvent.OnConfirmSaveHomeworkClick)
-                onUIEvent(CreateHomeworkUIEvent.OnDismissSaveConfirmationDialog)
-            },
-            negativeButtonText = stringResource(id = R.string.cancel),
-            onNegativeButtonClick = {
-                onUIEvent(CreateHomeworkUIEvent.OnDismissSaveConfirmationDialog)
-            },
-            onDismissRequest = {
-                onUIEvent(CreateHomeworkUIEvent.OnDismissSaveConfirmationDialog)
-            },
-        )
-    }
-
-    if (state.showHomeworkSavedDialog) {
-        InformationAlertDialog(
-            title = stringResource(id = R.string.success),
-            message = stringResource(id = R.string.homework_saved),
-            buttonText = stringResource(id = R.string.ok),
-            onButtonClicked = {
-                onUIEvent(CreateHomeworkUIEvent.OnDismissHomeworkSavedDialog)
-                onNavigateBack()
-            },
-            onDismissRequest = {
-                onUIEvent(CreateHomeworkUIEvent.OnDismissHomeworkSavedDialog)
-                onNavigateBack()
-            },
-        )
-    }
-
-    if (state.showDatePicker) {
-        DatePicker(
-            onDismissRequest = { onUIEvent(CreateHomeworkUIEvent.OnDismissDatePicker) },
-            onDateSelected = { onUIEvent(CreateHomeworkUIEvent.OnDatePicked(it)) }
-        )
-    }
-
-    if (state.showTimePicker) {
-        TimePicker(
-            onDismissRequest = { onUIEvent(CreateHomeworkUIEvent.OnDismissTimePicker) },
-            onTimeSelected = { onUIEvent(CreateHomeworkUIEvent.OnTimePicked(it)) }
-        )
-    }
-
-    if (state.showSubjectPicker) {
-        SubjectPicker(
-            subjects = state.subjects,
-            onDismissRequest = { onUIEvent(CreateHomeworkUIEvent.OnDismissSubjectPicker) },
-            onSubjectSelected = { onUIEvent(CreateHomeworkUIEvent.OnSubjectPicked(it)) },
-            navigateToCreateSubjectScreen = onNavigateToCreateSubjectScreen
-        )
-    }
-
-    if (state.showAttachmentPicker) {
-        AttachmentPicker(
-            onDismissRequest = { onUIEvent(CreateHomeworkUIEvent.OnDismissAttachmentPicker) },
-            onAttachmentsConfirmed = { onUIEvent(CreateHomeworkUIEvent.OnAttachmentPicked(it)) }
-        )
-    }
 
 }

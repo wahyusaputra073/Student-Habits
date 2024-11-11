@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wahyusembiring.common.util.launch
+import com.wahyusembiring.data.Result
 import com.wahyusembiring.data.model.File
 import com.wahyusembiring.data.model.ThesisWithTask
 import com.wahyusembiring.data.model.entity.Task
@@ -25,13 +26,13 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel(assistedFactory = ThesisPlannerScreenViewModel.Factory::class)
 class ThesisPlannerScreenViewModel @AssistedInject constructor(
-    @Assisted private val thesisId: Int,
+    @Assisted private val thesisId: String,
     private val thesisRepository: ThesisRepository
 ) : ViewModel() {
 
     @AssistedFactory
     interface Factory {
-        fun create(thesisId: Int): ThesisPlannerScreenViewModel
+        fun create(thesisId: String): ThesisPlannerScreenViewModel
     }
 
     private val debounceDuration = 1000L
@@ -40,15 +41,23 @@ class ThesisPlannerScreenViewModel @AssistedInject constructor(
 
     init {
         viewModelScope.launch {
-            thesisRepository.getThesisById(thesisId).collect { thesis ->
-                this@ThesisPlannerScreenViewModel.thesis = thesis
-                _uiState.update {
-                    it.copy(
-                        thesisTitle = thesis.thesis.title,
-                        editedThesisTitle = thesis.thesis.title,
-                        articles = thesis.thesis.articles,
-                        tasks = thesis.tasks
-                    )
+            thesisRepository.getThesisById(thesisId).collect { result ->
+                when (result) {
+                    is Result.Loading -> {}
+                    is Result.Error -> { throw result.throwable }
+                    is Result.Success -> {
+                        result.data.collect { thesis ->
+                            this@ThesisPlannerScreenViewModel.thesis = thesis
+                            _uiState.update {
+                                it.copy(
+                                    thesisTitle = thesis.thesis.title,
+                                    editedThesisTitle = thesis.thesis.title,
+                                    articles = thesis.thesis.articles,
+                                    tasks = thesis.tasks
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -94,7 +103,13 @@ class ThesisPlannerScreenViewModel @AssistedInject constructor(
 
     private fun onTaskDeleteConfirm(task: Task) {
         viewModelScope.launch {
-            thesisRepository.deleteTask(task)
+            thesisRepository.deleteTask(task).collect { result ->
+                when (result) {
+                    is Result.Loading -> {}
+                    is Result.Error -> { throw result.throwable }
+                    is Result.Success -> {}
+                }
+            }
         }
     }
 
@@ -110,7 +125,13 @@ class ThesisPlannerScreenViewModel @AssistedInject constructor(
                 thesis.thesis.let {
                     it.copy(articles = it.articles - article)
                 }
-            )
+            ).collect { result ->
+                when (result) {
+                    is Result.Loading -> {}
+                    is Result.Error -> { throw result.throwable }
+                    is Result.Success -> {}
+                }
+            }
         }
     }
 
@@ -139,12 +160,24 @@ class ThesisPlannerScreenViewModel @AssistedInject constructor(
     }
 
     private suspend fun onTaskCompletedStatusChange(task: Task, completed: Boolean) {
-        thesisRepository.changeTaskCompletedStatus(task, completed)
+        thesisRepository.changeTaskCompletedStatus(task, completed).collect { result ->
+            when (result) {
+                is Result.Loading -> {}
+                is Result.Error -> { throw result.throwable }
+                is Result.Success -> {}
+            }
+        }
     }
 
     private suspend fun onSaveTaskClick(task: Task) {
         val updatedTask = task.copy(thesisId = thesisId)
-        thesisRepository.addNewTask(updatedTask)
+        thesisRepository.addNewTask(updatedTask).collect { result ->
+            when (result) {
+                is Result.Loading -> {}
+                is Result.Error -> { throw result.throwable }
+                is Result.Success -> {}
+            }
+        }
     }
 
     private fun onThesisTitleChange(thesisName: String) {
@@ -156,7 +189,13 @@ class ThesisPlannerScreenViewModel @AssistedInject constructor(
         savingTitleJob = viewModelScope.launch {
             if (savingTitleJob?.isActive == true) savingTitleJob?.cancel()
             delay(debounceDuration)
-            thesisRepository.updateThesisTitleById(thesisId, thesisName)
+            thesisRepository.updateThesisTitleById(thesisId, thesisName).collect { result ->
+                when (result) {
+                    is Result.Loading -> {}
+                    is Result.Error -> { throw result.throwable }
+                    is Result.Success -> {}
+                }
+            }
         }
     }
 
@@ -172,7 +211,13 @@ class ThesisPlannerScreenViewModel @AssistedInject constructor(
             articles.forEach {
                 thesisRepository.updateThesis(
                     thesis = thesis.thesis.copy(articles = thesis.thesis.articles + it)
-                )
+                ).collect { result ->
+                    when (result) {
+                        is Result.Loading -> {}
+                        is Result.Error -> { throw result.throwable }
+                        is Result.Success -> {}
+                    }
+                }
             }
         }
     }

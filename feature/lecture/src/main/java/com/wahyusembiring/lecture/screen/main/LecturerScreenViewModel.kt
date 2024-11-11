@@ -5,8 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.wahyusembiring.common.navigation.Screen
+import com.wahyusembiring.data.Result
 import com.wahyusembiring.data.model.LecturerWithSubject
 import com.wahyusembiring.data.repository.LecturerRepository
+import com.wahyusembiring.ui.util.UIText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -31,7 +33,32 @@ class LecturerScreenViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            refreshLecturerList()
+            lecturerRepository.getAllLecturerWithSubjects().collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _state.update { it.copy(popUps = it.popUps + LecturerScreenPopUp.Loading) }
+                    }
+                    is Result.Error -> {
+                        _state.update {
+                            it.copy(
+                                popUps = it.popUps
+                                    .minus(LecturerScreenPopUp.Loading)
+                                    .plus(
+                                        LecturerScreenPopUp.Error(UIText.DynamicString(result.throwable.message ?: "Unknown Error"))
+                                    )
+                            )
+                        }
+                    }
+                    is Result.Success -> {
+                        _state.update { it.copy(popUps = it.popUps.minus(LecturerScreenPopUp.Loading)) }
+                        result.data.collect{ listOfLecturerWithSubjects ->
+                            _state.update {
+                                it.copy(listOfLecturerWithSubjects = listOfLecturerWithSubjects)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -41,6 +68,49 @@ class LecturerScreenViewModel @Inject constructor(
             is LecturerScreenUIEvent.OnLecturerClick -> onLecturerClick(event.lecturerWithSubjects)
             is LecturerScreenUIEvent.OnDeleteLecturerClick -> onDeleteLecturerClick(event.lecturerWithSubjects)
             is LecturerScreenUIEvent.OnDeletePhoneNumberClick -> onDeletePhoneNumberClick(event.phoneNumber)
+            is LecturerScreenUIEvent.OnDeleteLecturerConfirmed -> onDeleteLecturerConfirmed(event.lecturerWithSubjects)
+            is LecturerScreenUIEvent.OnDismissPopUp -> onDismissPopUp(event.popUp)
+        }
+    }
+
+    private fun onDismissPopUp(popUp: LecturerScreenPopUp) {
+        _state.update { it.copy(popUps = it.popUps.minus(popUp)) }
+    }
+
+    private fun onDeleteLecturerConfirmed(lecturerWithSubjects: LecturerWithSubject) {
+        viewModelScope.launch {
+            Log.d("LecturerViewModel", "Deleting lecturer with ID: ${lecturerWithSubjects.lecturer.id}")
+            withContext(Dispatchers.IO) {
+                lecturerRepository.deleteLecturer(lecturerWithSubjects.lecturer.id).collect { result ->
+                    when (result) {
+                        is Result.Loading -> {
+                            _state.update {
+                                it.copy(popUps = it.popUps + LecturerScreenPopUp.Loading)
+                            }
+                        }
+                        is Result.Error -> {
+                            _state.update {
+                                it.copy(
+                                    popUps = it.popUps
+                                        .minus(LecturerScreenPopUp.Loading)
+                                        .plus(
+                                            LecturerScreenPopUp.Error(UIText.DynamicString(result.throwable.message ?: "Unknown Error"))
+                                        )
+                                )
+                            }
+                        }
+                        is Result.Success -> {
+                            _state.update {
+                                it.copy(
+                                    popUps = it.popUps
+                                        .minus(LecturerScreenPopUp.Loading)
+                                        .plus(LecturerScreenPopUp.LecturerDeleted)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -55,12 +125,8 @@ class LecturerScreenViewModel @Inject constructor(
     }
 
     private fun onDeleteLecturerClick(lecturerWithSubjects: LecturerWithSubject) {
-        viewModelScope.launch {
-            Log.d("LecturerViewModel", "Deleting lecturer with ID: ${lecturerWithSubjects.lecturer.id}")
-            withContext(Dispatchers.IO) {
-                lecturerRepository.deleteLecturer(lecturerWithSubjects.lecturer.id)
-            }
-            refreshLecturerList()
+        _state.update {
+            it.copy(popUps = it.popUps + LecturerScreenPopUp.DeleteLecturerConfirmation(lecturerWithSubjects))
         }
     }
 
@@ -68,20 +134,15 @@ class LecturerScreenViewModel @Inject constructor(
         viewModelScope.launch {
             Log.d("LecturerViewModel", "Deleting phone number: $phoneNumber")
             withContext(Dispatchers.IO) {
-                lecturerRepository.deletePhoneNumber(phoneNumber)
-            }
-            refreshLecturerList()
-        }
-    }
-
-    private suspend fun refreshLecturerList() {
-        Log.d("LecturerViewModel", "Refreshing lecturer list...")
-        lecturerRepository.getAllLecturerWithSubjects().collect { listOfLecturerWithSubjects ->
-            _state.update {
-                it.copy(listOfLecturerWithSubjects = listOfLecturerWithSubjects)
+                lecturerRepository.deletePhoneNumber(phoneNumber).collect { result ->
+                    when (result) {
+                        is Result.Loading -> {}
+                        is Result.Error -> { throw result.throwable }
+                        is Result.Success -> {}
+                    }
+                }
             }
         }
-        Log.d("LecturerViewModel", "Lecturer list refreshed.")
     }
 }
 

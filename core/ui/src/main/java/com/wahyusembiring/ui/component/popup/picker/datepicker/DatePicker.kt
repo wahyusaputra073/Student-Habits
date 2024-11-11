@@ -14,13 +14,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.wahyusembiring.ui.R
 import com.wahyusembiring.ui.theme.spacing
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Date
+import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePicker(
    onDismissRequest: () -> Unit,
-   onDateSelected: (Date) -> Unit
+   onDateSelected: (LocalDate) -> Unit
 ) {
    val datePickerState = rememberDatePickerState(
       initialSelectedDateMillis = System.currentTimeMillis(),
@@ -36,7 +40,7 @@ fun DatePicker(
       confirmButton = {
          TextButton(
             onClick = {
-               onDateSelected(Date(datePickerState.selectedDateMillis!!))
+               onDateSelected(LocalDate.ofInstant(Instant.ofEpochMilli(datePickerState.selectedDateMillis!!), ZoneId.systemDefault()))
                onDismissRequest()
             },
             enabled = enableConfirmButton.value

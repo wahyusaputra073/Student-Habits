@@ -37,6 +37,9 @@ interface ReminderDao {
     @Upsert(entity = Reminder::class)
     suspend fun upsertReminder(reminder: Reminder)
 
+    @Upsert(entity = Reminder::class)
+    suspend fun upsertReminder(reminders: List<Reminder>)
+
     @Update(entity = Reminder::class)
     suspend fun updateReminder(reminder: Reminder)
 

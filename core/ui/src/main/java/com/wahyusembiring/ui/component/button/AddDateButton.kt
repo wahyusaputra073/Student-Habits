@@ -19,13 +19,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.wahyusembiring.datetime.Moment
 import com.wahyusembiring.datetime.formatter.FormattingStyle
 import com.wahyusembiring.ui.R
+import java.time.LocalDate
 import java.util.Date
+import kotlin.time.Duration.Companion.days
 
 
 @Composable
 fun AddDateButton(
     modifier: Modifier = Modifier,
-    date: Date?,
+    date: LocalDate?,
     onClicked: (() -> Unit)? = null,
 ) {
     ListItem(
@@ -48,7 +50,7 @@ fun AddDateButton(
             if (date != null) {
                 Column {
                     Text(
-                        text = Moment.fromEpochMilliseconds(date.time)
+                        text = Moment.fromEpochMilliseconds(date.toEpochDay().days.inWholeMilliseconds)
                             .toString(FormattingStyle.INDO_FULL)
                     )
                 }
@@ -60,20 +62,4 @@ fun AddDateButton(
             }
         }
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun AddDatePreview() {
-    MaterialTheme {
-        Surface {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                val date = Date(System.currentTimeMillis())
-                AddDateButton(date = date)
-            }
-        }
-    }
 }

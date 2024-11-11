@@ -46,6 +46,7 @@ import com.wahyusembiring.ui.component.dropdown.Dropdown
 import com.wahyusembiring.ui.component.popup.picker.timepicker.TimePicker
 import com.wahyusembiring.ui.theme.spacing
 import com.wahyusembiring.ui.util.UIText
+import java.time.LocalTime
 
 @Composable
 fun OfficeHourInput(
@@ -197,8 +198,8 @@ private fun OfficeHourInputDialog(
     onDismissRequest: () -> Unit,
     initialOfficeHour: OfficeHour = OfficeHour(
         day = 1,
-        startTime = Time(7, 0),
-        endTime = Time(17, 0)
+        startTime = LocalTime.of(7, 0),
+        endTime = LocalTime.of(17, 0)
     ),
     onOfficeHourAddClick: (OfficeHour) -> Unit
 ) {

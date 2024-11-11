@@ -3,6 +3,8 @@ package com.wahyusembiring.subject.screen.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.wahyusembiring.data.Result
+import com.wahyusembiring.data.model.entity.Exam
 import com.wahyusembiring.data.model.entity.Subject
 import com.wahyusembiring.data.repository.EventRepository
 import com.wahyusembiring.data.repository.SubjectRepository
@@ -23,35 +25,94 @@ class SubjectScreenViewModel @Inject constructor(
     private val eventRepository: EventRepository
 ) : ViewModel() {
 
-    init {
-        viewModelScope.launch {
-            subjectRepository.getAllSubjectWithExamAndHomework()
-                .collect { subjectWithExamAndHomework ->
-                    println("Broooooo ${subjectWithExamAndHomework.size}")
-                    _uiState.update {
-                        it.copy(
-                            subjects = subjectWithExamAndHomework
-                        )
-                    }
-                }
-        }
-    }
-
     private val _uiState = MutableStateFlow(SubjectScreenUIState())
     val uiState = _uiState.asStateFlow()
 
     private val _navigationEvent = Channel<SubjectScreenNavigationEvent>()
     val navigationEvent = _navigationEvent.receiveAsFlow()
 
+    private val _oneTimeEvent = Channel<SubjectScreenUIEvent>()
+    val oneTimeEvent = _oneTimeEvent.receiveAsFlow()
+
+    init {
+        viewModelScope.launch {
+            subjectRepository.getAllSubjectWithExamAndHomework()
+                .collect { result ->
+                    when (result) {
+                        is Result.Loading -> {
+                            _uiState.update {
+                                it.copy(popUps = it.popUps + SubjectScreenPopUp.Loading)
+                            }
+                        }
+                        is Result.Error -> { throw result.throwable }
+                        is Result.Success -> {
+                            _uiState.update {
+                                it.copy(popUps = it.popUps - SubjectScreenPopUp.Loading)
+                            }
+                            result.data.collect { subjectWithExamAndHomework ->
+                                _uiState.update {
+                                    it.copy(
+                                        subjects = subjectWithExamAndHomework
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+        }
+    }
+
+
+
     fun onUIEvent(event: SubjectScreenUIEvent) {
         when (event) {
-            is SubjectScreenUIEvent.OnExamClick -> {}
-            is SubjectScreenUIEvent.OnFloatingActionButtonClick -> {}
-            is SubjectScreenUIEvent.OnHamburgerMenuClick -> {}
-            is SubjectScreenUIEvent.OnHomeworkClick -> {}
+            is SubjectScreenUIEvent.OnFloatingActionButtonClick -> onFloatingActionButtonClick()
+            is SubjectScreenUIEvent.OnHamburgerMenuClick -> onHamburgerMenuClick()
             is SubjectScreenUIEvent.OnSubjectClick -> onSubjectClick(event.subject)
             is SubjectScreenUIEvent.OnDeleteSubjectClick -> onDeleteSubjectClick(event.subject)
+            is SubjectScreenUIEvent.OnSubjectDeleteConfirmed -> onSubjectDeleteConfirmed(event.subject)
+            is SubjectScreenUIEvent.OnDismissPopUp -> onDismissPopUp(event.popUp)
         }
+    }
+
+    private fun onDismissPopUp(popUp: SubjectScreenPopUp) {
+        _uiState.update {
+            it.copy(popUps = it.popUps - popUp)
+        }
+    }
+
+    private fun onSubjectDeleteConfirmed(subject: Subject) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                subjectRepository.onDeleteSubject(subject).collect { result ->
+                    when (result) {
+                        is Result.Loading -> {
+                            _uiState.update {
+                                it.copy(popUps = it.popUps + SubjectScreenPopUp.Loading)
+                            }
+                        }
+                        is Result.Error -> { throw result.throwable }
+                        is Result.Success -> {
+                            _uiState.update {
+                                it.copy(
+                                    popUps = it.popUps
+                                        .minus(SubjectScreenPopUp.Loading)
+                                        .plus(SubjectScreenPopUp.SubjectDeleted)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun onHamburgerMenuClick() {
+        _oneTimeEvent.trySend(SubjectScreenUIEvent.OnHamburgerMenuClick)
+    }
+
+    private fun onFloatingActionButtonClick() {
+        _navigationEvent.trySend(SubjectScreenNavigationEvent.NavigateToCreateSubject)
     }
 
     private fun onSubjectClick(subject: Subject) {
@@ -59,12 +120,8 @@ class SubjectScreenViewModel @Inject constructor(
     }
 
     private fun onDeleteSubjectClick(subject: Subject) {
-        viewModelScope.launch {
-            Log.d("LecturerViewModel", "Deleting lecturer with ID: ${subject.id}")
-            withContext(Dispatchers.IO) {
-                subjectRepository.onDeleteSubject(subject)
-            }
-//            refreshLecturerList()
+        _uiState.update {
+            it.copy(popUps = it.popUps + SubjectScreenPopUp.DeleteSubjectConfirmation(subject))
         }
     }
 

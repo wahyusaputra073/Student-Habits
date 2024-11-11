@@ -14,11 +14,12 @@ import androidx.compose.ui.res.stringResource
 import com.wahyusembiring.common.util.withZeroPadding
 import com.wahyusembiring.data.model.Time
 import com.wahyusembiring.ui.R
+import java.time.LocalTime
 
 @Composable
 fun AddReminderButton(
     modifier: Modifier = Modifier,
-    time: Time?,
+    time: LocalTime?,
     onClicked: (() -> Unit)? = null,
     permissionCheck: (() -> Unit)? = null // Menambahkan parameter untuk memeriksa izin
 ) {

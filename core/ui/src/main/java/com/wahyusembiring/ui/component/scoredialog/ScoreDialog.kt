@@ -20,11 +20,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.wahyusembiring.data.model.ExamWithSubject
 import com.wahyusembiring.ui.R
 
-data class ScoreDialog(
-    val exam: ExamWithSubject,
-    val initialScore: Int = 0
-)
-
 @Composable
 fun ScoreDialog(
     initialScore: Int = 0,

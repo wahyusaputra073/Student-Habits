@@ -35,6 +35,9 @@ interface ExamDao {
     @Upsert(entity = Exam::class)
     suspend fun upsertExam(exam: Exam)
 
+    @Upsert(entity = Exam::class)
+    suspend fun upsertExam(exams: List<Exam>)
+
     @Update(entity = Exam::class)
     suspend fun updateExam(exam: Exam)
 

@@ -1,5 +1,6 @@
 package com.wahyusembiring.data.repository
 
+import com.wahyusembiring.data.Result
 import com.wahyusembiring.data.model.entity.Task
 import com.wahyusembiring.data.model.entity.Thesis
 import com.wahyusembiring.data.model.ThesisWithTask
@@ -7,21 +8,21 @@ import kotlinx.coroutines.flow.Flow
 
 interface ThesisRepository {
 
-    fun getAllThesis(): Flow<List<ThesisWithTask>>
+    fun getAllThesis(): Flow<Result<Flow<List<ThesisWithTask>>>>
 
-    fun getThesisById(id: Int): Flow<ThesisWithTask>
+    fun getThesisById(id: String): Flow<Result<Flow<ThesisWithTask>>>
 
-    suspend fun saveNewThesis(thesis: Thesis): Long
+    fun saveNewThesis(thesis: Thesis): Flow<Result<String>>
 
-    suspend fun updateThesis(thesis: Thesis)
+    fun updateThesis(thesis: Thesis): Flow<Result<Unit>>
 
-    suspend fun updateThesisTitleById(id: Int, title: String)
+    fun updateThesisTitleById(id: String, title: String): Flow<Result<Unit>>
 
-    suspend fun deleteThesis(thesis: Thesis)
+    fun deleteThesis(thesis: Thesis): Flow<Result<Unit>>
 
-    suspend fun addNewTask(task: Task): Long
+    fun addNewTask(task: Task): Flow<Result<String>>
 
-    suspend fun deleteTask(task: Task)
+    fun deleteTask(task: Task): Flow<Result<Unit>>
 
-    suspend fun changeTaskCompletedStatus(task: Task, isCompleted: Boolean)
+    fun changeTaskCompletedStatus(task: Task, isCompleted: Boolean): Flow<Result<Unit>>
 }

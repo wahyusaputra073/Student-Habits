@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.wahyusembiring.data.model.entity.Task
 import kotlinx.coroutines.flow.Flow
 
@@ -20,6 +21,12 @@ interface TaskDao {
 
     @Insert(entity = Task::class)
     suspend fun insertTask(tasks: List<Task>): List<Long>
+
+    @Upsert(entity = Task::class)
+    suspend fun upsertTask(task: Task)
+
+    @Upsert(entity = Task::class)
+    suspend fun upsertTask(tasks: List<Task>)
 
     @Update(entity = Task::class)
     suspend fun updateTask(task: Task)

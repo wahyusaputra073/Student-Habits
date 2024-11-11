@@ -36,6 +36,10 @@ import com.wahyusembiring.subject.R
 import com.wahyusembiring.ui.component.modalbottomsheet.component.AddNewSubject
 import com.wahyusembiring.ui.component.modalbottomsheet.component.SubjectListItem
 import com.wahyusembiring.ui.component.modalbottomsheet.component.SubjectListItemMenu
+import com.wahyusembiring.ui.component.popup.alertdialog.confirmation.ConfirmationAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.error.ErrorAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.information.InformationAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.loading.LoadingAlertDialog
 import com.wahyusembiring.ui.component.topappbar.TopAppBar
 import com.wahyusembiring.ui.theme.spacing
 import kotlinx.coroutines.launch
@@ -54,26 +58,79 @@ fun SubjectScreen(
             is SubjectScreenNavigationEvent.NavigateToSubjectDetail -> {
                 navController.navigate(Screen.CreateSubject(it.subject.id))
             }
+
+            is SubjectScreenNavigationEvent.NavigateToCreateSubject -> {
+                navController.navigate(Screen.CreateSubject())
+            }
+        }
+    }
+
+    CollectAsOneTimeEvent(viewModel.oneTimeEvent) {  event ->
+        when (event) {
+            is SubjectScreenUIEvent.OnHamburgerMenuClick -> {
+                drawerState.open()
+            }
+            else -> Unit
         }
     }
 
     SubjectScreen(
         state = state,
-        onUIEvent = { event ->
-            when (event) {
-                is SubjectScreenUIEvent.OnHamburgerMenuClick -> {
-                    coroutineScope.launch { drawerState.open() }
-                }
-                is SubjectScreenUIEvent.OnExamClick -> {
-                    navController.navigate(Screen.CreateExam(event.exam.id))
-                }
-                is SubjectScreenUIEvent.OnFloatingActionButtonClick -> {
-                    navController.navigate(Screen.CreateSubject())
-                }
-                else -> viewModel.onUIEvent(event)
+        onUIEvent = viewModel::onUIEvent
+    )
+
+    for (popUp in state.popUps) {
+        when (popUp) {
+            is SubjectScreenPopUp.Loading -> {
+                LoadingAlertDialog(stringResource(R.string.loading))
+            }
+
+            is SubjectScreenPopUp.DeleteSubjectConfirmation -> {
+                ConfirmationAlertDialog(
+                    title = stringResource(R.string.delete_subject),
+                    message = stringResource(R.string.are_you_sure_you_want_to_delete_this_subject),
+                    positiveButtonText = stringResource(R.string.delete),
+                    onPositiveButtonClick = {
+                        viewModel.onUIEvent(SubjectScreenUIEvent.OnDismissPopUp(popUp))
+                        viewModel.onUIEvent(SubjectScreenUIEvent.OnSubjectDeleteConfirmed(popUp.subject))
+                    },
+                    negativeButtonText = stringResource(R.string.cancel),
+                    onNegativeButtonClick = {
+                        viewModel.onUIEvent(SubjectScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(SubjectScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                )
+            }
+            is SubjectScreenPopUp.Error -> {
+                ErrorAlertDialog(
+                    message = popUp.errorMessage.asString(),
+                    buttonText = stringResource(R.string.ok),
+                    onButtonClicked = {
+                        viewModel.onUIEvent(SubjectScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(SubjectScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                )
+            }
+            is SubjectScreenPopUp.SubjectDeleted -> {
+                InformationAlertDialog(
+                    title = stringResource(R.string.success),
+                    message = stringResource(R.string.subject_deleted_successfully),
+                    buttonText = stringResource(R.string.ok),
+                    onButtonClicked = {
+                        viewModel.onUIEvent(SubjectScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(SubjectScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                )
             }
         }
-    )
+    }
+
 }
 
 @Composable

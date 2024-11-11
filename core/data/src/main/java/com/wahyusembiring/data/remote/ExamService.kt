@@ -21,7 +21,7 @@ class ExamService @Inject constructor(
 ) {
 
     companion object {
-        private const val EXAM_COLLECTION_ID = "exam"
+        const val EXAM_COLLECTION_ID = "exam"
     }
 
     private val db by lazy { Firebase.firestore }

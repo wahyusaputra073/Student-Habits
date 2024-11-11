@@ -22,6 +22,10 @@ import com.wahyusembiring.common.navigation.Screen
 import com.wahyusembiring.common.util.CollectAsOneTimeEvent
 import com.wahyusembiring.lecture.R
 import com.wahyusembiring.lecture.component.LecturerCard
+import com.wahyusembiring.ui.component.popup.alertdialog.confirmation.ConfirmationAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.error.ErrorAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.information.InformationAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.loading.LoadingAlertDialog
 import com.wahyusembiring.ui.component.topappbar.TopAppBar
 import com.wahyusembiring.ui.theme.spacing
 import kotlinx.coroutines.launch
@@ -48,18 +52,68 @@ fun LecturerScreen(
     }
 
     LecturerScreen(
-        navController = navController,
         state = state,
         onUIEvent = viewModel::onUIEvent,
         onHamburgerMenuClick = {
             coroutineScope.launch { drawerState.open() }
         }
     )
+
+    for (popUp in state.popUps) {
+        when (popUp) {
+            is LecturerScreenPopUp.Loading -> {
+                LoadingAlertDialog(stringResource(R.string.loading))
+            }
+            is LecturerScreenPopUp.Error -> {
+                ErrorAlertDialog(
+                    message = popUp.message.asString(),
+                    buttonText = stringResource(R.string.ok),
+                    onButtonClicked = {
+                        viewModel.onUIEvent(LecturerScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(LecturerScreenUIEvent.OnDismissPopUp(popUp))
+                    }
+                )
+            }
+            is LecturerScreenPopUp.DeleteLecturerConfirmation -> {
+                ConfirmationAlertDialog(
+                    title = stringResource(R.string.delete_lecturer),
+                    message = stringResource(R.string.are_you_sure_you_want_to_delete_this_lecturer),
+                    positiveButtonText = stringResource(R.string.yes),
+                    onPositiveButtonClick = {
+                        viewModel.onUIEvent(LecturerScreenUIEvent.OnDismissPopUp(popUp))
+                        viewModel.onUIEvent(LecturerScreenUIEvent.OnDeleteLecturerConfirmed(popUp.lecturerWithSubjects))
+                    },
+                    negativeButtonText = stringResource(R.string.no),
+                    onNegativeButtonClick = {
+                        viewModel.onUIEvent(LecturerScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(LecturerScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                )
+            }
+            is LecturerScreenPopUp.LecturerDeleted -> {
+                InformationAlertDialog(
+                    title = stringResource(R.string.success),
+                    message = stringResource(R.string.lecturer_deleted_successfully),
+                    buttonText = stringResource(R.string.ok),
+                    onButtonClicked = {
+                        viewModel.onUIEvent(LecturerScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                    onDismissRequest = {
+                        viewModel.onUIEvent(LecturerScreenUIEvent.OnDismissPopUp(popUp))
+                    },
+                )
+            }
+        }
+    }
+
 }
 
 @Composable
 private fun LecturerScreen(
-    navController: NavController,
     state: LecturerScreenUIState,
     onUIEvent: (LecturerScreenUIEvent) -> Unit,
     onHamburgerMenuClick: () -> Unit,
@@ -74,7 +128,7 @@ private fun LecturerScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    onUIEvent(LecturerScreenUIEvent.OnAddLecturerClick(navController))
+                    onUIEvent(LecturerScreenUIEvent.OnAddLecturerClick)
                 }
             ) {
                 Icon(

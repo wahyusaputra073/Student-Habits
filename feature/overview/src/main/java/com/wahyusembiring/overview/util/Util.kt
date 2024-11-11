@@ -4,19 +4,22 @@ import com.wahyusembiring.data.model.ExamWithSubject
 import com.wahyusembiring.data.model.HomeworkWithSubject
 import com.wahyusembiring.data.model.entity.Reminder
 import com.wahyusembiring.datetime.Moment
+import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
+import kotlin.time.DurationUnit
 
 infix fun List<Any>.inside(range: ClosedRange<Duration>): List<Any> {
-    val today = Moment.now()
-    val startDay = (today - 1.days + range.start).epochMilliseconds
-    val endDay = (today - 1.days + range.endInclusive).epochMilliseconds
+    val today = LocalDate.now().atStartOfDay()
+    val startDay: LocalDateTime = today.plusDays(range.start.toLong(DurationUnit.DAYS))
+    val endDay: LocalDateTime = today.plusDays(range.endInclusive.toLong(DurationUnit.DAYS))
 
     return filter { event ->
         when (event) {
-            is ExamWithSubject -> event.exam.date.time in startDay..endDay
-            is HomeworkWithSubject -> event.homework.dueDate.time in startDay..endDay
-            is Reminder -> event.date.time in startDay..endDay
+            is ExamWithSubject -> event.exam.date.atStartOfDay() in (startDay..< endDay)
+            is HomeworkWithSubject -> event.homework.dueDate.atStartOfDay() in startDay..< endDay
+            is Reminder -> event.date.atStartOfDay() in startDay..< endDay
             else -> throw IllegalArgumentException("Invalid event type")
         }
     }
