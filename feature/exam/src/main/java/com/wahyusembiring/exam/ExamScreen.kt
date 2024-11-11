@@ -27,6 +27,7 @@ import com.wahyusembiring.data.model.entity.ExamCategory
 import com.wahyusembiring.ui.component.button.AddAttachmentButton
 import com.wahyusembiring.ui.component.button.AddDateButton
 import com.wahyusembiring.ui.component.button.AddReminderButton
+import com.wahyusembiring.ui.component.button.AddDeadlineButton
 import com.wahyusembiring.ui.component.button.AddSubjectButton
 import com.wahyusembiring.ui.component.button.ExamCategoryPickerButton
 import com.wahyusembiring.ui.component.modalbottomsheet.component.NavigationAndActionButtonHeader
@@ -38,6 +39,7 @@ import com.wahyusembiring.ui.component.popup.picker.attachmentpicker.AttachmentP
 import com.wahyusembiring.ui.component.popup.picker.datepicker.DatePicker
 import com.wahyusembiring.ui.component.popup.picker.examcategorypicker.ExamCategoryPicker
 import com.wahyusembiring.ui.component.popup.picker.subjectpicker.SubjectPicker
+import com.wahyusembiring.ui.component.popup.picker.timepicker.DeadlineTimePicker
 import com.wahyusembiring.ui.component.popup.picker.timepicker.TimePicker
 import com.wahyusembiring.ui.theme.spacing
 import com.wahyusembiring.ui.util.checkForPermissionOrLaunchPermissionLauncher
@@ -83,6 +85,20 @@ private fun ExamScreenUI(
             }
         }
 
+
+    val notificationDeadlinePermissionRequestLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            val allGranted = permissions.values.all { it }
+            if (allGranted) {
+                Log.d("PermissionCheck", "All permissions granted, launching event")
+                onUIEvent(ExamScreenUIEvent.OnExamDeadlineTimePickerClick)
+            } else {
+                Log.d("PermissionCheck", "Permission denied")
+            }
+        }
+
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
@@ -122,22 +138,45 @@ private fun ExamScreenUI(
                     date = state.date,
                     onClicked = { onUIEvent(ExamScreenUIEvent.OnExamDatePickerClick) }
                 )
+                AddDeadlineButton(
+                    times = state.times,
+                    onClicked = {
+                        Log.d("ButtonClick", "AddReminderButton clicked")
+                        onUIEvent(ExamScreenUIEvent.OnExamDeadlineTimePickerClick)
+//                        checkForPermissionOrLaunchPermissionLauncher(
+//                            context = context,
+//                            permissionToRequest = getNotificationReminderPermission(),
+//                            permissionRequestLauncher = notificationDeadlinePermissionRequestLauncher,
+//
+//                            onPermissionAlreadyGranted = {
+//                                Log.d(
+//                                    "PermissionCheck",
+//                                    "Permission already granted, launching event"
+//                                )
+//                                onUIEvent(ExamScreenUIEvent.OnExamDeadlineTimePickerClick)
+//                            },
+//
+//                        )
+                    }
+                )
+
                 AddReminderButton(
                     time = state.time,
                     onClicked = {
                         Log.d("ButtonClick", "AddReminderButton clicked")
-                        checkForPermissionOrLaunchPermissionLauncher(
-                            context = context,
-                            permissionToRequest = getNotificationReminderPermission(),
-                            permissionRequestLauncher = notificationPermissionRequestLauncher,
-                            onPermissionAlreadyGranted = {
-                                Log.d(
-                                    "PermissionCheck",
-                                    "Permission already granted, launching event"
-                                )
-                                onUIEvent(ExamScreenUIEvent.OnExamTimePickerClick)
-                            }
-                        )
+                        onUIEvent(ExamScreenUIEvent.OnExamTimePickerClick)
+//                        checkForPermissionOrLaunchPermissionLauncher(
+//                            context = context,
+//                            permissionToRequest = getNotificationReminderPermission(),
+//                            permissionRequestLauncher = notificationPermissionRequestLauncher,
+//                            onPermissionAlreadyGranted = {
+//                                Log.d(
+//                                    "PermissionCheck",
+//                                    "Permission already granted, launching event"
+//                                )
+//                                onUIEvent(ExamScreenUIEvent.OnExamTimePickerClick)
+//                            }
+//                        )
                     }
                 )
                 ExamCategoryPickerButton(
@@ -186,6 +225,13 @@ private fun ExamScreenUI(
         TimePicker(
             onDismissRequest = { onUIEvent(ExamScreenUIEvent.OnTimePickedDismiss) },
             onTimeSelected = { onUIEvent(ExamScreenUIEvent.OnTimePicked(it)) }
+        )
+    }
+
+    if (state.showDeadlineTimePicker) {
+        DeadlineTimePicker(
+            onDismissRequest = { onUIEvent(ExamScreenUIEvent.OnDeadlineTimePickedDismiss) },
+            onTimeSelected = { onUIEvent(ExamScreenUIEvent.OnDeadlineTimePicked(it)) }
         )
     }
 

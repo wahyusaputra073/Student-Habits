@@ -1,6 +1,7 @@
 package com.wahyusembiring.exam
 
 import com.wahyusembiring.data.model.Attachment
+import com.wahyusembiring.data.model.DeadlineTime
 import com.wahyusembiring.data.model.Time
 import com.wahyusembiring.data.model.entity.ExamCategory
 import com.wahyusembiring.data.model.entity.Subject
@@ -11,10 +12,18 @@ sealed class ExamScreenUIEvent {
     data class OnExamDescriptionChanged(val name: String) : ExamScreenUIEvent()
     data object OnExamDatePickerClick : ExamScreenUIEvent()
     data class OnDatePicked(val date: Date) : ExamScreenUIEvent()
+
     data object OnDatePickedDismiss : ExamScreenUIEvent()
     data object OnExamTimePickerClick : ExamScreenUIEvent()
+    data object OnExamDeadlineTimePickerClick : ExamScreenUIEvent()
+
+
     data class OnTimePicked(val time: Time) : ExamScreenUIEvent()
+
+    data class OnDeadlineTimePicked(val times: DeadlineTime) : ExamScreenUIEvent()
+
     data object OnTimePickedDismiss : ExamScreenUIEvent()
+    data object OnDeadlineTimePickedDismiss : ExamScreenUIEvent()
     data object OnExamSubjectPickerClick : ExamScreenUIEvent()
     data class OnSubjectPicked(val subject: Subject) : ExamScreenUIEvent()
     data object OnSubjectPickedDismiss : ExamScreenUIEvent()

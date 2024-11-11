@@ -85,6 +85,9 @@
     <string name="no_event_picture">No event picture</string>
     <string name="delete">Delete</string>
     <string name="task">Task</string>
+    <string name="add_deadline">Add deadline</string>
+    <string name="deadline_at">Deadline add</string>
+    <string name="when_deadline">When is deadline?</string>
     <array name="days">
         <item>Sunday</item>
         <item>Monday</item>

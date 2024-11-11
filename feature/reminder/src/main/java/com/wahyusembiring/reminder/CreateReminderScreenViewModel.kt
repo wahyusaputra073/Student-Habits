@@ -169,6 +169,7 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
             title = _state.value.title.ifBlank { throw MissingRequiredFieldException.Title() },
             date = _state.value.date ?: throw MissingRequiredFieldException.Date(),
             time = _state.value.time ?: throw MissingRequiredFieldException.Date(),
+            times = _state.value.times ?: throw MissingRequiredFieldException.Date(),
             color = _state.value.color,
             attachments = _state.value.attachments,
             description = _state.value.description,

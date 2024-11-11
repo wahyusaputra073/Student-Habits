@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.wahyusembiring.data.model.Attachment
+import com.wahyusembiring.data.model.DeadlineTime
 import com.wahyusembiring.data.model.Time
 import java.util.Date
 
@@ -19,6 +20,8 @@ data class Reminder(
     val date: Date,
 
     val time: Time,
+
+    val times: DeadlineTime,
 
     val color: Color,
 

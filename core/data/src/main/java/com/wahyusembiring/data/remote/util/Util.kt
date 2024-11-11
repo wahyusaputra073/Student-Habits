@@ -19,6 +19,7 @@ fun Exam.toHashMap(converter: Converter): HashMap<String, *> {
         "description" to description,
         "due_date" to converter.dateToLong(date),
         "reminder" to reminder?.let { converter.timeToString(it) },
+        "deadline" to deadline?.let { converter.timesToString(it) },
         "subject_id" to subjectId,
         "attachments" to converter.listOfAttachmentToJsonString(attachments),
         "score" to score,
@@ -33,8 +34,13 @@ fun DocumentSnapshot.toExam(converter: Converter): Exam {
         description = get("description", String::class.java) ?: "",
         date = get("due_date", Long::class.java)
             .let { converter.longToDate(it!!) },
+
         reminder = get("reminder", String::class.java)
             .let { converter.stringToTime(it!!) },
+
+        deadline = get("deadline", String::class.java)
+            .let { converter.stringToTimes(it!!) },
+
         subjectId = get("subject_id", Int::class.java)!!,
         attachments = get("attachments", String::class.java)
             .let { converter.jsonStringToListOfAttachment(it!!) },
@@ -51,6 +57,7 @@ fun Homework.toHashMap(converter: Converter): HashMap<String, *> {
         "due_date" to converter.dateToLong(dueDate),
         "completed" to completed,
         "reminder" to reminder?.let { converter.timeToString(it) },
+//        "deadline" to deadline?.let { converter.timesToString(it) },
         "subject_id" to subjectId,
         "attachments" to converter.listOfAttachmentToJsonString(attachments),
         "score" to score
@@ -67,6 +74,8 @@ fun DocumentSnapshot.toHomework(converter: Converter): Homework {
         completed = get("completed", Boolean::class.java) ?: false,
         reminder = get("reminder", String::class.java)
             .let { converter.stringToTime(it!!) },
+        deadline = get("deadline", String::class.java)
+            .let { converter.stringToTimes(it!!) },
         subjectId = get("subject_id", Int::class.java)!!,
         attachments = get("attachments", String::class.java)
             .let { converter.jsonStringToListOfAttachment(it!!) },
@@ -80,6 +89,7 @@ fun Reminder.toHashMap(converter: Converter): HashMap<String, *> {
         "description" to description,
         "due_date" to converter.dateToLong(date),
         "reminder" to converter.timeToString(time),
+        "deadline" to converter.timesToString(times),
         "color" to converter.colorToInt(color),
         "completed" to completed,
         "attachments" to converter.listOfAttachmentToJsonString(attachments)
@@ -95,6 +105,8 @@ fun DocumentSnapshot.toReminder(converter: Converter): Reminder {
             .let { converter.longToDate(it!!) },
         time = get("reminder", String::class.java)
             .let { converter.stringToTime(it!!) },
+        times = get("deadline", String::class.java)
+            .let { converter.stringToTimes(it!!) },
         color = get("color", Int::class.java)
             .let { converter.intToColor(it!!) },
         completed = get("completed", Boolean::class.java) ?: false,

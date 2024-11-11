@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -37,18 +36,16 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.imageLoader
+import com.wahyusembiring.common.util.withZeroPadding
+import com.wahyusembiring.data.model.DeadlineTime
 import com.wahyusembiring.data.model.ExamWithSubject
 import com.wahyusembiring.data.model.HomeworkWithSubject
-import com.wahyusembiring.data.model.entity.Exam
-import com.wahyusembiring.data.model.entity.Homework
 import com.wahyusembiring.data.model.entity.Reminder
-import com.wahyusembiring.data.model.entity.Subject
 import com.wahyusembiring.ui.R
 import com.wahyusembiring.ui.theme.spacing
 import com.wahyusembiring.ui.util.UIText
@@ -150,7 +147,8 @@ private fun Body(
                         title = event.exam.title,
                         subjectColor = event.subject.color,
                         subjectName = event.subject.name,
-                        eventType = stringResource(R.string.exam)
+                        eventType = stringResource(R.string.exam),
+                        times = event.exam.deadline
                     )
                 }
 
@@ -163,7 +161,8 @@ private fun Body(
                         title = event.homework.title,
                         subjectColor = event.subject.color,
                         subjectName = event.subject.name,
-                        eventType = stringResource(R.string.task)
+                        eventType = stringResource(R.string.task),
+                        times = event.homework.deadline
                     )
                 }
 
@@ -176,7 +175,9 @@ private fun Body(
                         title = event.title,
                         subjectColor = null,
                         subjectName = null,
-                        eventType = stringResource(R.string.reminder)
+                        eventType = stringResource(R.string.reminder),
+                        times = null
+
                     )
                 }
             }
@@ -189,6 +190,7 @@ private fun BodyEventList(
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     title: String,
+    times: DeadlineTime?,
     onClick: () -> Unit = {},
     onDeletedClick: () -> Unit = {},
     subjectColor: Color?,
@@ -226,10 +228,24 @@ private fun BodyEventList(
                         )
                     }
                 )
-                Text(
-                    text = "($eventType)",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+
+                Row(){
+                    Text(
+                        text = "($eventType)",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.Small))
+
+                    if (times != null) {
+                        Text(
+                            text = "${times.hour.withZeroPadding()}:${times.minute.withZeroPadding()}",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
+
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically

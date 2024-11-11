@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
 import com.wahyusembiring.data.model.Attachment
+import com.wahyusembiring.data.model.DeadlineTime
 import com.wahyusembiring.data.model.File
 import com.wahyusembiring.data.model.entity.ExamCategory
 import com.wahyusembiring.data.model.OfficeHour
@@ -51,6 +52,18 @@ class Converter(
     fun stringToTime(string: String): Time {
         val (hour, minute) = string.split(":")
         return Time(hour.toInt(), minute.toInt())
+    }
+
+
+    @TypeConverter
+    fun timesToString(times: DeadlineTime): String {
+        return "${times.hour}:${times.minute}"
+    }
+
+    @TypeConverter
+    fun stringToTimes(string: String): DeadlineTime {
+        val (hour, minute) = string.split(":")
+        return DeadlineTime(hour.toInt(), minute.toInt())
     }
 
     @TypeConverter

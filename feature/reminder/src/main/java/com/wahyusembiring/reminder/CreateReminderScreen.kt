@@ -28,6 +28,7 @@ import com.wahyusembiring.ui.component.button.AddReminderButton
 import com.wahyusembiring.ui.component.button.ChooseColorButton
 import com.wahyusembiring.ui.component.modalbottomsheet.component.NavigationAndActionButtonHeader
 import com.wahyusembiring.ui.component.popup.alertdialog.confirmation.ConfirmationAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.error.ErrorAlertDialog
 import com.wahyusembiring.ui.component.popup.alertdialog.information.InformationAlertDialog
 import com.wahyusembiring.ui.component.popup.alertdialog.loading.LoadingAlertDialog
 import com.wahyusembiring.ui.component.popup.picker.attachmentpicker.AttachmentPicker
@@ -121,14 +122,15 @@ private fun CreateReminderScreen(
                     onClicked = {
                         // Delete this
                         Log.d("ButtonClick", "AddReminderButton clicked")
-                        checkForPermissionOrLaunchPermissionLauncher(
-                            context = context,
-                            permissionToRequest = getNotificationReminderPermission(),
-                            permissionRequestLauncher = notificationPermissionRequestLauncher,
-                            onPermissionAlreadyGranted = {
-                                onUIEvent(CreateReminderScreenUIEvent.OnTimePickerButtonClick)
-                            }
-                        )
+                        onUIEvent(CreateReminderScreenUIEvent.OnTimePickerButtonClick)
+//                        checkForPermissionOrLaunchPermissionLauncher(
+//                            context = context,
+//                            permissionToRequest = getNotificationReminderPermission(),
+//                            permissionRequestLauncher = notificationPermissionRequestLauncher,
+//                            onPermissionAlreadyGranted = {
+//                                onUIEvent(CreateReminderScreenUIEvent.OnTimePickerButtonClick)
+//                            }
+//                        )
                     }
                 )
                 ChooseColorButton(
@@ -231,6 +233,19 @@ private fun CreateReminderScreen(
                 onUIEvent(CreateReminderScreenUIEvent.OnReminderSavedDialogDismiss)
                 onNavigateUp()
             },
+        )
+    }
+
+    if (state.errorMessage != null) {
+        ErrorAlertDialog(
+            message = state.errorMessage.asString(),
+            buttonText = stringResource(R.string.ok),
+            onButtonClicked = {
+                onUIEvent(CreateReminderScreenUIEvent.OnErrorDialogDismiss)
+            },
+            onDismissRequest = {
+                onUIEvent(CreateReminderScreenUIEvent.OnErrorDialogDismiss)
+            }
         )
     }
 

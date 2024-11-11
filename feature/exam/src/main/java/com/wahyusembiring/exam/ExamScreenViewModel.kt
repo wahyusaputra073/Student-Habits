@@ -1,12 +1,12 @@
 package com.wahyusembiring.exam
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wahyusembiring.common.util.launch
 import com.wahyusembiring.common.util.scheduleReminder
 import com.wahyusembiring.data.model.Attachment
+import com.wahyusembiring.data.model.DeadlineTime
 import com.wahyusembiring.data.model.Time
 import com.wahyusembiring.data.model.entity.Exam
 import com.wahyusembiring.data.model.entity.ExamCategory
@@ -54,6 +54,7 @@ class ExamScreenViewModel @AssistedInject constructor(
             is ExamScreenUIEvent.OnExamDescriptionChanged -> onExamDescriptionChanged(event.name)
             is ExamScreenUIEvent.OnExamDatePickerClick -> launch { onExamDatePickerClick() }
             is ExamScreenUIEvent.OnExamTimePickerClick -> launch { onExamTimePickerClick() }
+            is ExamScreenUIEvent.OnExamDeadlineTimePickerClick -> launch { onExamDeadlineTimePickerClick() }
             is ExamScreenUIEvent.OnExamSubjectPickerClick -> launch { onExamSubjectPickerClick() }
             is ExamScreenUIEvent.OnExamAttachmentPickerClick -> launch { onExamAttachmentPickerClick() }
             is ExamScreenUIEvent.OnExamCategoryPickerClick -> launch { onExamCategoryPickerClick() }
@@ -71,7 +72,9 @@ class ExamScreenViewModel @AssistedInject constructor(
             is ExamScreenUIEvent.OnSubjectPicked -> onSubjectPicked(event.subject)
             is ExamScreenUIEvent.OnSubjectPickedDismiss -> onSubjectPickedDismiss()
             is ExamScreenUIEvent.OnTimePicked -> onTimePicked(event.time)
+            is ExamScreenUIEvent.OnDeadlineTimePicked -> onDeadlineTimePicked(event.times)
             is ExamScreenUIEvent.OnTimePickedDismiss -> onTimePickedDismiss()
+            is ExamScreenUIEvent.OnDeadlineTimePickedDismiss -> onDeadlineTimePickedDismiss()
         }
     }
 
@@ -79,9 +82,19 @@ class ExamScreenViewModel @AssistedInject constructor(
         _state.update { it.copy(showTimePicker = false) }
     }
 
+    private fun onDeadlineTimePickedDismiss() {
+        _state.update { it.copy(showDeadlineTimePicker = false) }
+    }
+
+    private fun onDeadlineTimePicked(times: DeadlineTime) {
+        _state.update { it.copy(times = times) }
+    }
+
     private fun onTimePicked(time: Time) {
         _state.update { it.copy(time = time) }
     }
+
+
 
     private fun onSubjectPickedDismiss() {
         _state.update { it.copy(showSubjectPicker = false) }
@@ -138,6 +151,7 @@ class ExamScreenViewModel @AssistedInject constructor(
                             name = examWithSubject.exam.title,
                             date = examWithSubject.exam.date,
                             time = examWithSubject.exam.reminder,
+                            times = examWithSubject.exam.deadline,
                             subject = examWithSubject.subject,
                             category = examWithSubject.exam.category,
                             score = examWithSubject.exam.score,
@@ -170,8 +184,8 @@ class ExamScreenViewModel @AssistedInject constructor(
                 title = _state.value.name,
                 date = _state.value.date ?: throw MissingRequiredFieldException.Date(),
                 reminder = _state.value.time ?: throw MissingRequiredFieldException.Time(),
-                subjectId = _state.value.subject?.id
-                    ?: throw MissingRequiredFieldException.Subject(),
+                deadline = _state.value.times ?: throw MissingRequiredFieldException.Times(),
+                subjectId = _state.value.subject?.id?: throw MissingRequiredFieldException.Subject(),
                 category = _state.value.category,
                 description = _state.value.description,
                 attachments = _state.value.attachments,
@@ -204,6 +218,7 @@ class ExamScreenViewModel @AssistedInject constructor(
                 is MissingRequiredFieldException.Date -> UIText.StringResource(R.string.date_cannot_be_empty)
                 is MissingRequiredFieldException.Subject -> UIText.StringResource(R.string.subject_cannot_be_empty)
                 is MissingRequiredFieldException.Time -> UIText.StringResource(R.string.time_cannot_be_empty)
+                is MissingRequiredFieldException.Times -> UIText.StringResource(R.string.deadline_time_cannot_be_empty)
                 is MissingRequiredFieldException.Title -> UIText.StringResource(R.string.exam_name_cannot_be_empty)
             }
             _state.update { it.copy(errorMessage = errorMessage) }
@@ -224,6 +239,10 @@ class ExamScreenViewModel @AssistedInject constructor(
 
     private fun onExamTimePickerClick() {
         _state.update { it.copy(showTimePicker = true) }
+    }
+
+    private fun onExamDeadlineTimePickerClick() {
+        _state.update { it.copy(showDeadlineTimePicker = true) }
     }
 
     private fun onExamSubjectPickerClick() {

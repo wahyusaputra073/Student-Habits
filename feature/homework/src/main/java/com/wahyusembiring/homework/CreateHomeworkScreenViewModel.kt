@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wahyusembiring.common.util.scheduleReminder
 import com.wahyusembiring.data.model.Attachment
+import com.wahyusembiring.data.model.DeadlineTime
 import com.wahyusembiring.data.model.Time
 import com.wahyusembiring.data.model.entity.Homework
 import com.wahyusembiring.data.model.entity.Subject
@@ -56,6 +57,7 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
                 is CreateHomeworkUIEvent.OnSaveHomeworkButtonClicked -> onSaveHomeworkButtonClick()
                 is CreateHomeworkUIEvent.OnPickDateButtonClicked -> onDatePickerClick()
                 is CreateHomeworkUIEvent.OnPickTimeButtonClicked -> onTimePickerClick()
+                is CreateHomeworkUIEvent.OnPickDeadlineTimeButtonClicked -> onDeadlineTimePickerClick()
                 is CreateHomeworkUIEvent.OnPickSubjectButtonClicked -> onSubjectPickerClick()
                 is CreateHomeworkUIEvent.OnPickAttachmentButtonClicked -> onAttachmentPickerClick()
                 is CreateHomeworkUIEvent.OnAttachmentPicked -> onAttachmentPicked(event.attachments)
@@ -67,8 +69,10 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
                 is CreateHomeworkUIEvent.OnDismissSaveConfirmationDialog -> onDismissSaveConfirmationDialog()
                 is CreateHomeworkUIEvent.OnDismissSubjectPicker -> onDismissSubjectPicker()
                 is CreateHomeworkUIEvent.OnDismissTimePicker -> onDismissTimePicker()
+                is CreateHomeworkUIEvent.OnDismissDeadlineTimePicker -> onDismissDeadlineTimePicker()
                 is CreateHomeworkUIEvent.OnSubjectPicked -> onSubjectSelected(event.subject)
                 is CreateHomeworkUIEvent.OnTimePicked -> onTimeSelected(event.time)
+                is CreateHomeworkUIEvent.OnDeadlineTimePicked -> onDeadlineTimeSelected(event.times)
                 is CreateHomeworkUIEvent.OnDismissErrorDialog -> onDismissErrorDialog()
                 is CreateHomeworkUIEvent.OnDismissSavingLoading -> onDismissSavingLoading()
             }
@@ -90,6 +94,12 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
     private fun onDismissTimePicker() {
         _state.update {
             it.copy(showTimePicker = false)
+        }
+    }
+
+    private fun onDismissDeadlineTimePicker() {
+        _state.update {
+            it.copy(showDeadlineTimePicker = false)
         }
     }
 
@@ -147,6 +157,12 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
         }
     }
 
+    private fun onDeadlineTimePickerClick() {
+        _state.update {
+            it.copy(showDeadlineTimePicker = true)
+        }
+    }
+
     private suspend fun onDatePickerClick() {
         _state.update {
             it.copy(showDatePicker = true)
@@ -159,44 +175,26 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
         }
     }
 
-    private fun onConfirmSaveHomeworkClick() {
+    private suspend fun onConfirmSaveHomeworkClick() {
         _state.update { it.copy(showSavingLoading = true) }
         try {
-            viewModelScope.launch {
-                saveHomework()
-                _state.update {
-                    it.copy(showSavingLoading = false, showHomeworkSavedDialog = true)
-                }
+            val homework = Homework(
+                id = if (homeworkId == -1) 0 else homeworkId,
+                title = _state.value.homeworkTitle.ifBlank { throw MissingRequiredFieldException.Title() },
+                dueDate = _state.value.date ?: throw MissingRequiredFieldException.Date(),
+                subjectId = _state.value.subject?.id ?: throw MissingRequiredFieldException.Subject(),
+                reminder = _state.value.time,
+                deadline = _state.value.times,
+                description = _state.value.description,
+                attachments = _state.value.attachments,
+                completed = _state.value.isCompleted
+            )
+            val newHomeworkId = if (homeworkId == -1) {
+                eventRepository.saveHomework(homework)
+            } else {
+                eventRepository.updateHomework(homework)
+                homeworkId
             }
-        } catch (e: MissingRequiredFieldException) {
-            _state.update { it.copy(showSavingLoading = false) }
-            val errorMessage = when (e) {
-                is MissingRequiredFieldException.Title -> UIText.StringResource(R.string.homework_title_is_required)
-                is MissingRequiredFieldException.Date -> UIText.StringResource(R.string.due_date_is_required)
-                is MissingRequiredFieldException.Subject -> UIText.StringResource(R.string.subject_is_required)
-            }
-            _state.update { it.copy(errorMessage = errorMessage) }
-        }
-    }
-
-    private suspend fun saveHomework() {
-        val homework = Homework(
-            id = if (homeworkId == -1) 0 else homeworkId,
-            title = _state.value.homeworkTitle.ifBlank { throw MissingRequiredFieldException.Title() },
-            dueDate = _state.value.date ?: throw MissingRequiredFieldException.Date(),
-            subjectId = _state.value.subject?.id ?: throw MissingRequiredFieldException.Subject(),
-            reminder = _state.value.time,
-            description = _state.value.description,
-            attachments = _state.value.attachments,
-            completed = _state.value.isCompleted
-        )
-        val newHomeworkId = if (homeworkId == -1) {
-            eventRepository.saveHomework(homework)
-        } else {
-            eventRepository.updateHomework(homework)
-            homeworkId
-        }
-        if (homework.reminder != null) {
             scheduleReminder(
                 context = application.applicationContext,
                 localDateTime = LocalDateTime.of(
@@ -206,6 +204,20 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
                 title = homework.title,
                 reminderId = newHomeworkId.toInt()
             )
+            _state.update {
+                it.copy(
+                    showSavingLoading = false,
+                    showHomeworkSavedDialog = true
+                )
+            }
+        } catch (e: MissingRequiredFieldException) {
+            _state.update { it.copy(showSavingLoading = false) }
+            val errorMessage = when (e) {
+                is MissingRequiredFieldException.Title -> UIText.StringResource(R.string.homework_title_is_required)
+                is MissingRequiredFieldException.Date -> UIText.StringResource(R.string.due_date_is_required)
+                is MissingRequiredFieldException.Subject -> UIText.StringResource(R.string.subject_is_required)
+            }
+            _state.update { it.copy(errorMessage = errorMessage) }
         }
     }
 
@@ -233,6 +245,12 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
         }
     }
 
+    private fun onDeadlineTimeSelected(time: DeadlineTime) {
+        _state.update {
+            it.copy(times = time)
+        }
+    }
+
     private fun onSubjectSelected(subject: Subject) {
         _state.update {
             it.copy(subject = subject)
@@ -256,6 +274,7 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
                             homeworkTitle = homeworkDto.homework.title,
                             date = homeworkDto.homework.dueDate,
                             time = homeworkDto.homework.reminder,
+                            times = homeworkDto.homework.deadline,
                             subject = homeworkDto.subject,
                             attachments = homeworkDto.homework.attachments,
                             isCompleted = homeworkDto.homework.completed,

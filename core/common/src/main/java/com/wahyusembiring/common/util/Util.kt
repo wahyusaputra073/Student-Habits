@@ -58,6 +58,9 @@ fun ViewModel.launch(block: suspend CoroutineScope.() -> Unit): Job {
 }
 
 fun Int.withZeroPadding(length: Int = 2): String = this.toString().padStart(length, '0')
+
+
+
 fun getNotificationReminderPermission(): List<String> {
     val permissions = mutableListOf<String>()
 
