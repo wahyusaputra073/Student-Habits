@@ -248,18 +248,19 @@ private fun ExamScreenUI(
                     time = state.time,
                     onClicked = {
                         Log.d("ButtonClick", "AddReminderButton clicked")
-                        checkForPermissionOrLaunchPermissionLauncher(
-                            context = context,
-                            permissionToRequest = getNotificationReminderPermission(),
-                            permissionRequestLauncher = notificationPermissionRequestLauncher,
-                            onPermissionAlreadyGranted = {
-                                Log.d(
-                                    "PermissionCheck",
-                                    "Permission already granted, launching event"
-                                )
-                                onUIEvent(ExamScreenUIEvent.OnExamTimePickerClick)
-                            }
-                        )
+                        onUIEvent(ExamScreenUIEvent.OnExamTimePickerClick)
+//                        checkForPermissionOrLaunchPermissionLauncher(
+//                            context = context,
+//                            permissionToRequest = getNotificationReminderPermission(),
+//                            permissionRequestLauncher = notificationPermissionRequestLauncher,
+//                            onPermissionAlreadyGranted = {
+//                                Log.d(
+//                                    "PermissionCheck",
+//                                    "Permission already granted, launching event"
+//                                )
+//                                onUIEvent(ExamScreenUIEvent.OnExamTimePickerClick)
+//                            }
+//                        )
                     }
                 )
                 ExamCategoryPickerButton(

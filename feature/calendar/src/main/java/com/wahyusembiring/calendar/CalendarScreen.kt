@@ -80,6 +80,8 @@ fun CalendarScreen(
             is CalendarScreenNavigationEvent.NavigateToReminderDetail -> {
                 navController.navigate(Screen.CreateReminder(it.reminderId))
             }
+
+            else -> {}
         }
     }
 

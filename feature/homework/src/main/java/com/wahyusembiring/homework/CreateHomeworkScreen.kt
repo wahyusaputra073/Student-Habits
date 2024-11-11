@@ -30,6 +30,7 @@ import com.wahyusembiring.common.util.CollectAsOneTimeEvent
 import com.wahyusembiring.common.util.getNotificationReminderPermission
 import com.wahyusembiring.ui.component.button.AddAttachmentButton
 import com.wahyusembiring.ui.component.button.AddDateButton
+import com.wahyusembiring.ui.component.button.AddDeadlineButton
 import com.wahyusembiring.ui.component.button.AddReminderButton
 import com.wahyusembiring.ui.component.button.AddSubjectButton
 import com.wahyusembiring.ui.component.modalbottomsheet.component.NavigationAndActionButtonHeader
@@ -40,6 +41,7 @@ import com.wahyusembiring.ui.component.popup.alertdialog.loading.LoadingAlertDia
 import com.wahyusembiring.ui.component.popup.picker.attachmentpicker.AttachmentPicker
 import com.wahyusembiring.ui.component.popup.picker.datepicker.DatePicker
 import com.wahyusembiring.ui.component.popup.picker.subjectpicker.SubjectPicker
+import com.wahyusembiring.ui.component.popup.picker.timepicker.DeadlineTimePicker
 import com.wahyusembiring.ui.component.popup.picker.timepicker.TimePicker
 import com.wahyusembiring.ui.theme.HabitTheme
 import com.wahyusembiring.ui.theme.spacing
@@ -242,6 +244,31 @@ private fun CreateHomeworkScreen(
                         onUIEvent(CreateHomeworkUIEvent.OnPickDateButtonClicked)
                     }
                 )
+
+                AddDeadlineButton(
+                    times = state.times,
+                    onClicked = {
+                        Log.d("ButtonClick", "AddDeadlineTimeButton clicked")
+                        onUIEvent(CreateHomeworkUIEvent.OnPickDeadlineTimeButtonClicked)
+
+
+//                        checkForPermissionOrLaunchPermissionLauncher(
+//                            context = context,
+//                            permissionToRequest = getNotificationReminderPermission(),
+//                            permissionRequestLauncher = notificationPermissionRequestLauncher,
+//                            onPermissionAlreadyGranted = {
+//                                Log.d(
+//                                    "PermissionCheck",
+//                                    "Permission already granted, launching event"
+//                                )
+//                                onUIEvent(CreateHomeworkUIEvent.OnPickDeadlineTimeButtonClicked)
+//                            }
+//                        )
+                    }
+                )
+
+
+
                 AddReminderButton(
                     time = state.time,
                     onClicked = {

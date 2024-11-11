@@ -6,6 +6,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.wahyusembiring.data.model.Attachment
+import com.wahyusembiring.data.model.DeadlineTime
 import com.wahyusembiring.data.model.Time
 import java.time.LocalDate
 import java.time.LocalTime
@@ -34,6 +35,8 @@ data class Homework(
     val dueDate: LocalDate,
 
     val reminder: LocalTime?,
+
+    val deadline: DeadlineTime?,
 
     @ColumnInfo(name = "subject_id")
     val subjectId: String,
