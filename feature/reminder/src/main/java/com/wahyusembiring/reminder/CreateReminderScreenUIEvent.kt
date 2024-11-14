@@ -3,6 +3,7 @@ package com.wahyusembiring.reminder
 import android.content.Context
 import androidx.compose.ui.graphics.Color
 import com.wahyusembiring.data.model.Attachment
+import com.wahyusembiring.data.model.SpanTime
 import com.wahyusembiring.data.model.Time
 import java.util.Date
 
@@ -27,5 +28,10 @@ sealed class CreateReminderScreenUIEvent {
     data object OnSaveConfirmationDialogDismiss : CreateReminderScreenUIEvent()
     data object OnReminderSavedDialogDismiss : CreateReminderScreenUIEvent()
     data object OnErrorDialogDismiss : CreateReminderScreenUIEvent()
+
+    data object OnDurationTimePicker : CreateReminderScreenUIEvent()
+    data class OnDurationTimePicked(val span: SpanTime) : CreateReminderScreenUIEvent()
+    data object OnDurationTimePickerDismiss : CreateReminderScreenUIEvent()
+//    data object OnDeleteDurationHour : CreateReminderScreenUIEvent()
 
 }

@@ -18,4 +18,6 @@
     <string name="success">Success</string>
     <string name="ok">Ok</string>
     <string name="reminder_description">Catatan</string>
+    <string name="dura_is_required">Duration time is required</string>
+    <string name="range_is_required">Range is required</string>
 </resources>

@@ -1,6 +1,5 @@
 package com.wahyusembiring.reminder
 
-import android.Manifest
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,12 +20,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
-import com.wahyusembiring.common.util.getNotificationReminderPermission
-import com.wahyusembiring.ui.component.button.AddAttachmentButton
 import com.wahyusembiring.ui.component.button.AddDateButton
 import com.wahyusembiring.ui.component.button.AddReminderButton
 import com.wahyusembiring.ui.component.button.ChooseColorButton
 import com.wahyusembiring.ui.component.modalbottomsheet.component.NavigationAndActionButtonHeader
+import com.wahyusembiring.ui.component.officehourinput.DurationInput
 import com.wahyusembiring.ui.component.popup.alertdialog.confirmation.ConfirmationAlertDialog
 import com.wahyusembiring.ui.component.popup.alertdialog.error.ErrorAlertDialog
 import com.wahyusembiring.ui.component.popup.alertdialog.information.InformationAlertDialog
@@ -34,9 +32,9 @@ import com.wahyusembiring.ui.component.popup.alertdialog.loading.LoadingAlertDia
 import com.wahyusembiring.ui.component.popup.picker.attachmentpicker.AttachmentPicker
 import com.wahyusembiring.ui.component.popup.picker.colorpicker.ColorPicker
 import com.wahyusembiring.ui.component.popup.picker.datepicker.DatePicker
+import com.wahyusembiring.ui.component.popup.picker.durationtimepicker.DurationTimePicker
 import com.wahyusembiring.ui.component.popup.picker.timepicker.TimePicker
 import com.wahyusembiring.ui.theme.spacing
-import com.wahyusembiring.ui.util.checkForPermissionOrLaunchPermissionLauncher
 
 @Composable
 fun CreateReminderScreen(
@@ -117,6 +115,15 @@ private fun CreateReminderScreen(
                     date = state.date,
                     onClicked = { onUIEvent(CreateReminderScreenUIEvent.OnDatePickerButtonClick) }
                 )
+
+
+                DurationInput(
+                    durationTime = state.spanTime,
+                    onClicked = {
+                        onUIEvent(CreateReminderScreenUIEvent.OnDurationTimePicker)
+                    }
+                )
+
                 AddReminderButton(
                     time = state.time,
                     onClicked = {
@@ -175,6 +182,14 @@ private fun CreateReminderScreen(
         TimePicker(
             onDismissRequest = { onUIEvent(CreateReminderScreenUIEvent.OnTimePickerDismiss) },
             onTimeSelected = { onUIEvent(CreateReminderScreenUIEvent.OnTimePicked(it)) }
+        )
+    }
+
+
+    if (state.showDuraPicker) {
+        DurationTimePicker(
+            onDismissRequest = { onUIEvent(CreateReminderScreenUIEvent.OnDurationTimePickerDismiss) },
+            onDurationSelected = { onUIEvent(CreateReminderScreenUIEvent.OnDurationTimePicked(it)) }
         )
     }
 

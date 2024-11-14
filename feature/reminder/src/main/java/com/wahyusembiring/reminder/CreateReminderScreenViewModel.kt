@@ -1,16 +1,13 @@
 package com.wahyusembiring.reminder
 
-import android.app.AlarmManager
 import android.app.Application
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wahyusembiring.common.util.launch
 import com.wahyusembiring.common.util.scheduleReminder
 import com.wahyusembiring.data.model.Attachment
+import com.wahyusembiring.data.model.SpanTime
 import com.wahyusembiring.data.model.Time
 import com.wahyusembiring.data.model.entity.Reminder
 import com.wahyusembiring.data.repository.EventRepository
@@ -27,9 +24,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
-import java.time.ZoneOffset
 import java.util.Date
-import javax.inject.Inject
 
 @HiltViewModel(assistedFactory = CreateReminderScreenViewModel.Factory::class)
 class CreateReminderScreenViewModel @AssistedInject constructor(
@@ -58,6 +53,7 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
                             title = reminderDto.title,
                             date = reminderDto.date,
                             time = reminderDto.time,
+                            spanTime = reminderDto.duration,
                             color = reminderDto.color,
                             attachments = reminderDto.attachments,
                             description = reminderDto.description,
@@ -75,6 +71,15 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
             is CreateReminderScreenUIEvent.OnReminderDescriptionChanged -> onReminderDescriptionChanged(event.title)
             is CreateReminderScreenUIEvent.OnDatePickerButtonClick -> launch { onDatePickerButtonClick() }
             is CreateReminderScreenUIEvent.OnTimePickerButtonClick -> launch { onTimePickerButtonClick() }
+            is CreateReminderScreenUIEvent.OnTimePickerDismiss -> onTimePickerDismiss()
+
+
+            is CreateReminderScreenUIEvent.OnDurationTimePicker -> launch { onDurationTimePicker() }
+            is CreateReminderScreenUIEvent.OnDurationTimePicked -> onDurationTimePicked(event.span)
+            is CreateReminderScreenUIEvent.OnDurationTimePickerDismiss -> onDurationTimePickerDismiss()
+//            is CreateReminderScreenUIEvent.OnDeleteDurationHour -> launch { onDeleteDurationHour() }
+
+
             is CreateReminderScreenUIEvent.OnColorPickerButtonClick -> launch { onColorPickerButtonClick() }
             is CreateReminderScreenUIEvent.OnAttachmentPickerButtonClick -> launch { onAttachmentPickerButtonClick() }
             is CreateReminderScreenUIEvent.OnSaveButtonClicked -> launch { onSaveButtonClicked() }
@@ -89,7 +94,8 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
             is CreateReminderScreenUIEvent.OnSaveConfirmationDialogDismiss -> onSaveConfirmationDialogDismiss()
             is CreateReminderScreenUIEvent.OnSaveReminderConfirmClick -> launch { onSaveReminderConfirmClick() }
             is CreateReminderScreenUIEvent.OnTimePicked -> onTimePicked(event.time)
-            is CreateReminderScreenUIEvent.OnTimePickerDismiss -> onTimePickerDismiss()
+
+
         }
     }
 
@@ -97,9 +103,30 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
         _state.update { it.copy(showTimePicker = false) }
     }
 
+
     private fun onTimePicked(time: Time) {
         _state.update { it.copy(time = time) }
     }
+
+
+    private fun onDurationTimePickerDismiss() {
+        _state.update { it.copy(showDuraPicker = false) }
+    }
+
+    private fun onDurationTimePicker() {
+        _state.update { it.copy(showDuraPicker = true) }
+    }
+
+    private fun onDurationTimePicked(span: SpanTime) {
+        _state.update { it.copy(spanTime = span) }
+    }
+
+
+//    private fun onDurationTimePicked(spanTimes: SpanTime) {
+//        _state.update {
+//            it.copy(spanTime = it.spanTime + spanTimes)
+//        }
+//    }
 
     private fun onSaveConfirmationDialogDismiss() {
         _state.update { it.copy(showSaveConfirmationDialog = false) }
@@ -145,7 +172,32 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
     private suspend fun onSaveReminderConfirmClick() {
         _state.update { it.copy(showSavingLoading = true) }
         try {
-            saveReminder()
+            val reminder = Reminder(
+                id = if (reminderId != -1) reminderId else 0,
+                title = _state.value.title.ifBlank { throw MissingRequiredFieldException.Title() },
+                date = _state.value.date ?: throw MissingRequiredFieldException.Date(),
+                time = _state.value.time ?: throw MissingRequiredFieldException.Time(),
+                duration = _state.value.spanTime ?: throw MissingRequiredFieldException.Range(),
+                color = _state.value.color,
+                attachments = _state.value.attachments,
+                description = _state.value.description,
+                completed = _state.value.isCompleted
+            )
+            val savedReminderId = if (reminderId == -1) {
+                eventRepository.saveReminder(reminder)
+            } else {
+                eventRepository.updateReminder(reminder)
+                reminderId
+            }
+            scheduleReminder(
+                context = application.applicationContext,
+                localDateTime = LocalDateTime.of(
+                    LocalDate.ofInstant(reminder.date.toInstant(), ZoneId.systemDefault()),
+                    LocalTime.of(reminder.time.hour, reminder.time.minute)
+                ),
+                title = reminder.title,
+                reminderId = savedReminderId.toInt()
+            )
             _state.update {
                 it.copy(
                     showSavingLoading = false,
@@ -158,39 +210,13 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
                 is MissingRequiredFieldException.Title -> UIText.StringResource(R.string.title_is_required)
                 is MissingRequiredFieldException.Date -> UIText.StringResource(R.string.date_is_required)
                 is MissingRequiredFieldException.Time -> UIText.StringResource(R.string.time_is_required)
+                is MissingRequiredFieldException.Range -> UIText.StringResource(R.string.range_is_required)
             }
             _state.update { it.copy(errorMessage = errorMessage) }
         }
     }
 
-    private suspend fun saveReminder() {
-        val reminder = Reminder(
-            id = if (reminderId != -1) reminderId else 0,
-            title = _state.value.title.ifBlank { throw MissingRequiredFieldException.Title() },
-            date = _state.value.date ?: throw MissingRequiredFieldException.Date(),
-            time = _state.value.time ?: throw MissingRequiredFieldException.Date(),
-            times = _state.value.times ?: throw MissingRequiredFieldException.Date(),
-            color = _state.value.color,
-            attachments = _state.value.attachments,
-            description = _state.value.description,
-            completed = _state.value.isCompleted
-        )
-        val savedReminderId = if (reminderId == -1) {
-            eventRepository.saveReminder(reminder)
-        } else {
-            eventRepository.updateReminder(reminder)
-            reminderId
-        }
-        scheduleReminder(
-            context = application.applicationContext,
-            localDateTime = LocalDateTime.of(
-                LocalDate.ofInstant(reminder.date.toInstant(), ZoneId.systemDefault()),
-                LocalTime.of(reminder.time.hour, reminder.time.minute)
-            ),
-            title = reminder.title,
-            reminderId = savedReminderId.toInt()
-        )
-    }
+
 
 
     private fun onTitleChanged(title: String) {
@@ -212,6 +238,10 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
     private fun onTimePickerButtonClick() {
         _state.update { it.copy(showTimePicker = true) }
     }
+
+
+
+
 
     private fun onColorPickerButtonClick() {
         _state.update { it.copy(showColorPicker = true) }

@@ -223,6 +223,7 @@ private fun IncrementButton(
     }
 }
 
+
 @Composable
 private fun BoxScope.EventIndicator(
     dayState: DayState<DynamicSelectionState>,

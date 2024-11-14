@@ -88,6 +88,10 @@
     <string name="add_deadline">Add deadline</string>
     <string name="deadline_at">Deadline add</string>
     <string name="when_deadline">When is deadline?</string>
+    <string name="add_duration_event">Add duration event</string>
+    <string name="event_from_to">From %1$s:%2$s to %3$s:%4$s</string>
+    <string name="add_end_time">Add end time</string>
+    <string name="events_from_to">%1$s:%2$s - %3$s:%4$s</string>
     <array name="days">
         <item>Sunday</item>
         <item>Monday</item>

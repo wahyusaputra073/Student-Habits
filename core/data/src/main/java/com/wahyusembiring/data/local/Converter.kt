@@ -11,6 +11,7 @@ import com.wahyusembiring.data.model.DeadlineTime
 import com.wahyusembiring.data.model.File
 import com.wahyusembiring.data.model.entity.ExamCategory
 import com.wahyusembiring.data.model.OfficeHour
+import com.wahyusembiring.data.model.SpanTime
 import com.wahyusembiring.data.model.Time
 import com.wahyusembiring.data.util.toAttachment
 import com.wahyusembiring.data.util.toFile
@@ -65,6 +66,20 @@ class Converter(
         val (hour, minute) = string.split(":")
         return DeadlineTime(hour.toInt(), minute.toInt())
     }
+
+//    @TypeConverter
+//    fun duraToString(dura: SpanTime): String {
+//        return "${dura.startTime}:${dura.endTime}"
+//    }
+//
+//    @TypeConverter
+//    fun stringToDura(string: String): SpanTime {
+//        val (startTime, endTime) = string.split(":")
+//        return SpanTime(startTime.toInt(), endTime.toInt())
+//    }
+
+
+
 
     @TypeConverter
     fun colorToInt(color: Color): Int {
@@ -139,6 +154,17 @@ class Converter(
 
     @TypeConverter
     fun jsonStringToListOfOfficeHour(jsonString: String): List<OfficeHour> {
+        return Json.decodeFromString(jsonString)
+    }
+
+
+    @TypeConverter
+    fun listOfDurationToJsonString(listOfDuration: SpanTime): String {
+        return Json.encodeToString(listOfDuration)
+    }
+
+    @TypeConverter
+    fun jsonStringToListOfDuration(jsonString: String): SpanTime {
         return Json.decodeFromString(jsonString)
     }
 

@@ -45,6 +45,7 @@ import com.wahyusembiring.common.util.withZeroPadding
 import com.wahyusembiring.data.model.DeadlineTime
 import com.wahyusembiring.data.model.ExamWithSubject
 import com.wahyusembiring.data.model.HomeworkWithSubject
+import com.wahyusembiring.data.model.SpanTime
 import com.wahyusembiring.data.model.entity.Reminder
 import com.wahyusembiring.ui.R
 import com.wahyusembiring.ui.theme.spacing
@@ -148,7 +149,8 @@ private fun Body(
                         subjectColor = event.subject.color,
                         subjectName = event.subject.name,
                         eventType = stringResource(R.string.exam),
-                        times = event.exam.deadline
+                        times = event.exam.deadline,
+                        duration = null,
                     )
                 }
 
@@ -162,7 +164,8 @@ private fun Body(
                         subjectColor = event.subject.color,
                         subjectName = event.subject.name,
                         eventType = stringResource(R.string.task),
-                        times = event.homework.deadline
+                        times = event.homework.deadline,
+                        duration = null,
                     )
                 }
 
@@ -176,7 +179,9 @@ private fun Body(
                         subjectColor = null,
                         subjectName = null,
                         eventType = stringResource(R.string.reminder),
-                        times = null
+                        times = null,
+                        duration = event.duration
+
 
                     )
                 }
@@ -191,6 +196,7 @@ private fun BodyEventList(
     onCheckedChange: (Boolean) -> Unit,
     title: String,
     times: DeadlineTime?,
+    duration: SpanTime?,
     onClick: () -> Unit = {},
     onDeletedClick: () -> Unit = {},
     subjectColor: Color?,
@@ -236,6 +242,21 @@ private fun BodyEventList(
                     )
 
                     Spacer(modifier = Modifier.width(MaterialTheme.spacing.Small))
+
+                    if (duration != null) {
+                        Text(
+                            text = stringResource(
+                                R.string.events_from_to,
+                                duration.startTime.hour.withZeroPadding(),
+                                duration.startTime.minute.withZeroPadding(),
+                                duration.endTime.hour.withZeroPadding(),
+                                duration.endTime.minute.withZeroPadding()
+                            ),
+
+
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
 
                     if (times != null) {
                         Text(

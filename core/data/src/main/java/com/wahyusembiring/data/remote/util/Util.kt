@@ -89,10 +89,10 @@ fun Reminder.toHashMap(converter: Converter): HashMap<String, *> {
         "description" to description,
         "due_date" to converter.dateToLong(date),
         "reminder" to converter.timeToString(time),
-        "deadline" to converter.timesToString(times),
         "color" to converter.colorToInt(color),
         "completed" to completed,
-        "attachments" to converter.listOfAttachmentToJsonString(attachments)
+        "attachments" to converter.listOfAttachmentToJsonString(attachments),
+        "duration" to converter.listOfDurationToJsonString(duration)
     )
 }
 
@@ -105,8 +105,8 @@ fun DocumentSnapshot.toReminder(converter: Converter): Reminder {
             .let { converter.longToDate(it!!) },
         time = get("reminder", String::class.java)
             .let { converter.stringToTime(it!!) },
-        times = get("deadline", String::class.java)
-            .let { converter.stringToTimes(it!!) },
+        duration = get("duration", String::class.java)
+            .let { converter.jsonStringToListOfDuration(it!!) },
         color = get("color", Int::class.java)
             .let { converter.intToColor(it!!) },
         completed = get("completed", Boolean::class.java) ?: false,

@@ -1,16 +1,18 @@
 package com.wahyusembiring.data.model.entity
 
-import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.wahyusembiring.data.model.Attachment
 import com.wahyusembiring.data.model.DeadlineTime
+import com.wahyusembiring.data.model.OfficeHour
+import com.wahyusembiring.data.model.SpanTime
 import com.wahyusembiring.data.model.Time
 import java.util.Date
 
 
 @Entity(tableName = "reminder")
+
 data class Reminder(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
@@ -19,9 +21,9 @@ data class Reminder(
 
     val date: Date,
 
-    val time: Time,
+    val duration: SpanTime,
 
-    val times: DeadlineTime,
+    val time: Time,
 
     val color: Color,
 
