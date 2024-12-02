@@ -32,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -104,7 +103,7 @@ fun OfficeHourInput(
 }
 
 @Composable
-private fun OfficeHourListItem(
+fun OfficeHourListItem(
     officeHour: OfficeHour,
     onDeleteClick: () -> Unit
 ) {
@@ -170,7 +169,7 @@ private fun OfficeHourListItem(
 }
 
 @Composable
-private fun EmptyOfficeHour() {
+fun EmptyOfficeHour() {
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
@@ -193,7 +192,7 @@ enum class TimeType {
 }
 
 @Composable
-private fun OfficeHourInputDialog(
+fun OfficeHourInputDialog(
     onDismissRequest: () -> Unit,
     initialOfficeHour: OfficeHour = OfficeHour(
         day = 1,
