@@ -61,4 +61,6 @@ interface HomeworkDao {
     @Query("DELETE FROM homework")
     suspend fun deleteAllHomework()
 
+    @Query("UPDATE homework SET completed = :isCompleted WHERE id = :homeworkId")
+    suspend fun updateCompletedStatus(homeworkId: String, isCompleted: Boolean)
 }

@@ -19,4 +19,16 @@
     <string name="ok">Ok</string>
     <string name="exam_description">Catatan</string>
     <string name="loading">Loading...</string>
+    <string name="create">Create</string>
+    <string name="exam">Exam</string>
+    <string name="please_enter_exam_name">Please enter exam name</string>
+    <string name="exam_period">Exam period</string>
+    <string name="please_select_exam_period">Please select exam period</string>
+    <string name="subject">Subject</string>
+    <string name="please_select_a_subject">Please select a subject</string>
+    <string name="notify_me_before_exam_day">Notify me before exam day</string>
+    <string name="custom_triple_dot">Custom...</string>
+    <string name="notify_me_before_the_deadline">Notify me before exam deadline</string>
+    <string name="notes">notes</string>
+    <string name="add_some_notes">Add some notes...</string>
 </resources>

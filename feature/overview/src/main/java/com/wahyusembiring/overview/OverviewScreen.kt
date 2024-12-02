@@ -21,6 +21,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -31,16 +32,29 @@ import com.wahyusembiring.common.navigation.Screen
 import com.wahyusembiring.common.util.CollectAsOneTimeEvent
 import com.wahyusembiring.data.model.ExamWithSubject
 import com.wahyusembiring.data.model.HomeworkWithSubject
+import com.wahyusembiring.data.model.entity.Exam
+import com.wahyusembiring.data.model.entity.ExamCategory
+import com.wahyusembiring.data.model.entity.Homework
 import com.wahyusembiring.data.model.entity.Reminder
+import com.wahyusembiring.data.model.entity.Subject
 import com.wahyusembiring.ui.component.eventcard.EventCard
 import com.wahyusembiring.ui.component.scoredialog.ScoreDialog
 import com.wahyusembiring.ui.component.floatingactionbutton.HomeworkExamAndReminderFAB
 import com.wahyusembiring.ui.component.popup.alertdialog.error.ErrorAlertDialog
 import com.wahyusembiring.ui.component.popup.alertdialog.loading.LoadingAlertDialog
 import com.wahyusembiring.ui.component.topappbar.TopAppBar
+import com.wahyusembiring.ui.component.v2.overviewcard.EmptyEventCard
+import com.wahyusembiring.ui.component.v2.overviewcard.ExamCard
+import com.wahyusembiring.ui.component.v2.overviewcard.HomeworkCard
+import com.wahyusembiring.ui.component.v2.overviewcard.ReminderCard
 import com.wahyusembiring.ui.theme.HabitTheme
 import com.wahyusembiring.ui.theme.spacing
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 
 
 @Composable
@@ -172,35 +186,88 @@ private fun OverviewScreenMainContent(
     onUIEvent: (OverviewScreenUIEvent) -> Unit,
 ) {
     val context = LocalContext.current
+    val currentDate = remember { LocalDate.now() }
 
     LazyColumn(
         modifier = modifier.fillMaxSize()
     ) {
-        items(
-            items = state.eventCards,
-            key = { it.title.asString(context) }
-        ) {
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.Medium))
-            DaySectionHeader(
-                title = it.title.asString(),
-                date = it.date.asString()
-            )
-            EventCard(
-                modifier = Modifier.padding(
-                    horizontal = MaterialTheme.spacing.Large,
-                    vertical = MaterialTheme.spacing.Small
-                ),
-                onEventClick = { event ->
-                    onUIEvent(OverviewScreenUIEvent.OnEventClick(event))
-                },
-                onDeletedEventClick = { event ->
-                    onUIEvent(OverviewScreenUIEvent.OnDeleteEvent(event))
-                },
-                events = it.events,
-                onEventCheckedChange = { event, isChecked ->
-                    onUIEvent(OverviewScreenUIEvent.OnEventCompletedStateChange(event, isChecked))
-                },
-            )
+        repeat(7) { dayOffset ->
+            val events = when (dayOffset) {
+                0 -> state.todayEvents
+                1 -> state.tomorrowEvents
+                2 -> state.day3rdEvents
+                3 -> state.day4thEvents
+                4 -> state.day5thEvents
+                5 -> state.day6thEvents
+                6 -> state.day7thEvents
+                else -> emptyList()
+            }
+            item {
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.Medium))
+                DaySectionHeader(
+                    title = when (dayOffset) {
+                        0 -> stringResource(R.string.today)
+                        1 -> stringResource(R.string.tomorrow)
+                        else -> {
+                            currentDate.plusDays(dayOffset.toLong()).format(DateTimeFormatter.ofPattern("EEEE", Locale.getDefault()))
+                        }
+                    },
+                    date = when (dayOffset) {
+                        0, 1 -> {
+                            currentDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL))
+                        }
+                        else -> {
+                            currentDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
+                        }
+                    }
+                )
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.Medium))
+            }
+            if (events.isEmpty()) {
+                item {
+                    EmptyEventCard(
+                        modifier = Modifier.padding(
+                            vertical = MaterialTheme.spacing.Medium,
+                            horizontal = MaterialTheme.spacing.Large
+                        )
+                    )
+                }
+            }
+            items(
+                items = events,
+                key = { it.hashCode() }
+            ) { event ->
+                when (event) {
+                    is HomeworkWithSubject -> {
+                        HomeworkCard(
+                            modifier = Modifier.padding(
+                                vertical = MaterialTheme.spacing.Small,
+                                horizontal = MaterialTheme.spacing.Large
+                            ),
+                            homeworkWithSubject = event,
+                        )
+                    }
+                    is ExamWithSubject -> {
+                        ExamCard(
+                            modifier = Modifier.padding(
+                                vertical = MaterialTheme.spacing.Small,
+                                horizontal = MaterialTheme.spacing.Large
+                            ),
+                            examWithSubject = event,
+                        )
+                    }
+                    is Reminder -> {
+                        ReminderCard(
+                            modifier = Modifier.padding(
+                                vertical = MaterialTheme.spacing.Small,
+                                horizontal = MaterialTheme.spacing.Large
+                            ),
+                            reminder = event,
+                            dateTime = event.reminderDates.first()
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -226,6 +293,69 @@ private fun DaySectionHeader(
         Text(
             text = date,
             style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun OverviewScreenPreview() {
+
+    val dummySubject = Subject(
+        name = "Subject 1",
+        color = Color.Green,
+        lecturerId = "",
+        room = "20",
+        description = ""
+    )
+
+    val dummyReminder = Reminder(
+        title = "Reminder 1",
+        notes = "Description 1",
+        reminderDates = listOf(LocalDateTime.now()),
+    )
+
+    val dummyHomework = HomeworkWithSubject(
+        homework = Homework(
+            title = "Homework 1",
+            notes = "Description 1",
+            dueDate = LocalDateTime.now(),
+            deadline = LocalDateTime.now(),
+            dueReminder = null,
+            deadlineReminder = null,
+            completed = false,
+            subjectId = ""
+        ),
+        subject = dummySubject
+    )
+
+    val dummyExam = ExamWithSubject(
+        exam = Exam(
+            title = "Exam 1",
+            notes = "Description 1",
+            dueDate = LocalDateTime.now(),
+            deadline = LocalDateTime.now(),
+            dueReminder = null,
+            deadlineReminder = null,
+            score = null,
+            subjectId = "",
+            category = ExamCategory.WRITTEN
+        ),
+        subject = dummySubject
+    )
+
+
+    HabitTheme {
+        OverviewScreen(
+            state = OverviewScreenUIState(
+                todayEvents = listOf(
+                    dummyReminder,
+                    dummyHomework,
+                    dummyExam,
+                    dummyReminder.copy(id = "1")
+                )
+            ),
+            onUIEvent = {}
         )
     }
 }

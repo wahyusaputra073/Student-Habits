@@ -20,13 +20,13 @@ interface ReminderDao {
     @Query("SELECT * FROM reminder WHERE id = :id")
     fun getReminderById(id: String): Flow<Reminder?>
 
-    @Query(
-        "SELECT * " +
-                "FROM reminder " +
-                "WHERE date >= :minDate AND date <= :maxDate " +
-                "ORDER BY date ASC"
-    )
-    fun getAllReminder(minDate: Long, maxDate: Long): Flow<List<Reminder>>
+//    @Query(
+//        "SELECT * " +
+//                "FROM reminder " +
+//                "WHERE date >= :minDate AND date <= :maxDate " +
+//                "ORDER BY date ASC"
+//    )
+//    fun getAllReminder(minDate: Long, maxDate: Long): Flow<List<Reminder>>
 
     @Insert(entity = Reminder::class)
     suspend fun insertReminder(reminder: Reminder): Long

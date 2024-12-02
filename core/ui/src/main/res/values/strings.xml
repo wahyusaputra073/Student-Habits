@@ -88,6 +88,26 @@
     <string name="add_deadline">Add deadline</string>
     <string name="deadline_at">Deadline add</string>
     <string name="when_deadline">When is deadline?</string>
+    <string name="start_date">Start date:</string>
+    <string name="deadline_double_colon">Deadline:</string>
+    <string name="select_time">Select Time</string>
+    <string name="deadline_cannot_be_before_start_date">Deadline cannot be before start date</string>
+    <string name="the_selected_time_is_not_allowed">The selected time is not allowed</string>
+    <string name="please_select_a_date">Please select a date</string>
+    <string name="_15_minutes_before">15 Minutes Before</string>
+    <string name="_30_minutes_before">30 Minutes Before</string>
+    <string name="_1_hour_before">1 Hour Before</string>
+    <string name="_1_day_before">1 Day Before</string>
+    <string name="_2_days_before">2 Day Before</string>
+    <string name="_3_days_before">3 Day Before</string>
+    <string name="no_items">No items</string>
+    <string name="more_options">More Options</string>
+    <string name="select_lecturer">Select Lecturer</string>
+    <string name="please_choose_a_lecturer_for_this_subject">Please choose a lecturer</string>
+    <string name="assignment_date">Assignment date: %1$s</string>
+    <string name="deadline">Deadline: %1$s</string>
+    <string name="completed">Completed</string>
+    <string name="success">Success</string>
     <array name="days">
         <item>Sunday</item>
         <item>Monday</item>

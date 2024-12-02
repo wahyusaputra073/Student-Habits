@@ -115,16 +115,16 @@ class SubjectRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getAllSubjectWithExamAndHomework(scored: Boolean): Flow<Result<Flow<List<SubjectWithExamAndHomework>>>> {
-        return flow {
-            emit(Result.Loading())
-            val subjectWithExamAndHomework = subjectService.getAllSubjectWithExamAndHomework(scored)
-            subjectDao.upsertSubject(subjectWithExamAndHomework.map { it.subject })
-            examDao.upsertExam(subjectWithExamAndHomework.flatMap { it.exams })
-            homeworkDao.upsertHomework(subjectWithExamAndHomework.flatMap { it.homeworks })
-            emit(Result.Success(subjectDao.getSubjectWithExamAndHomework(scored)))
-        }.catch {
-            emit(Result.Error(it))
-        }
-    }
+//    override fun getAllSubjectWithExamAndHomework(scored: Boolean): Flow<Result<Flow<List<SubjectWithExamAndHomework>>>> {
+//        return flow {
+//            emit(Result.Loading())
+//            val subjectWithExamAndHomework = subjectService.getAllSubjectWithExamAndHomework(scored)
+//            subjectDao.upsertSubject(subjectWithExamAndHomework.map { it.subject })
+//            examDao.upsertExam(subjectWithExamAndHomework.flatMap { it.exams })
+//            homeworkDao.upsertHomework(subjectWithExamAndHomework.flatMap { it.homeworks })
+//            emit(Result.Success(subjectDao.getSubjectWithExamAndHomework(scored)))
+//        }.catch {
+//            emit(Result.Error(it))
+//        }
+//    }
 }

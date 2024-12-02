@@ -125,49 +125,49 @@ class SubjectService @Inject constructor(
         }
     }
 
-    suspend fun getAllSubjectWithExamAndHomework(scored: Boolean): List<SubjectWithExamAndHomework> {
-        val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
-        val subjectQuerySnapshot = db
-            .collection(USER_COLLECTION_ID)
-            .document(user.id)
-            .collection(SUBJECT_COLLECTION_ID).get().await()
-        val subjects = subjectQuerySnapshot.documents.map { it.toSubject(converter) }
-        return subjects.map { subject ->
-            SubjectWithExamAndHomework(
-                subject = subject,
-                exams = db
-                    .collection(USER_COLLECTION_ID)
-                    .document(user.id)
-                    .collection(ExamService.EXAM_COLLECTION_ID)
-                    .whereArrayContains("subject_id", subject.id)
-                    .get()
-                    .await()
-                    .documents.map { it.toExam(converter) }
-                    .filter {
-                        if (scored) {
-                            it.score != null
-                        } else {
-                            it.score == null
-                        }
-                    },
-                homeworks = db
-                    .collection(USER_COLLECTION_ID)
-                    .document(user.id)
-                    .collection(HomeworkService.HOMEWORK_COLLECTION_ID)
-                    .whereArrayContains("subject_id", subject.id)
-                    .get()
-                    .await()
-                    .documents.map { it.toHomework(converter) }
-                    .filter {
-                        if (scored) {
-                            it.score != null
-                        } else {
-                            it.score == null
-                        }
-                    },
-            )
-        }
-    }
+//    suspend fun getAllSubjectWithExamAndHomework(scored: Boolean): List<SubjectWithExamAndHomework> {
+//        val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
+//        val subjectQuerySnapshot = db
+//            .collection(USER_COLLECTION_ID)
+//            .document(user.id)
+//            .collection(SUBJECT_COLLECTION_ID).get().await()
+//        val subjects = subjectQuerySnapshot.documents.map { it.toSubject(converter) }
+//        return subjects.map { subject ->
+//            SubjectWithExamAndHomework(
+//                subject = subject,
+//                exams = db
+//                    .collection(USER_COLLECTION_ID)
+//                    .document(user.id)
+//                    .collection(ExamService.EXAM_COLLECTION_ID)
+//                    .whereArrayContains("subject_id", subject.id)
+//                    .get()
+//                    .await()
+//                    .documents.map { it.toExam(converter) }
+//                    .filter {
+//                        if (scored) {
+//                            it.score != null
+//                        } else {
+//                            it.score == null
+//                        }
+//                    },
+//                homeworks = db
+//                    .collection(USER_COLLECTION_ID)
+//                    .document(user.id)
+//                    .collection(HomeworkService.HOMEWORK_COLLECTION_ID)
+//                    .whereArrayContains("subject_id", subject.id)
+//                    .get()
+//                    .await()
+//                    .documents.map { it.toHomework(converter) }
+//                    .filter {
+//                        if (scored) {
+//                            it.score != null
+//                        } else {
+//                            it.score == null
+//                        }
+//                    },
+//            )
+//        }
+//    }
 
     suspend fun saveSubject(subject: Subject) {
         val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()

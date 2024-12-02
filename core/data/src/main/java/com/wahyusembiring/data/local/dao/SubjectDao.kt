@@ -42,7 +42,7 @@ interface SubjectDao {
     fun getAllSubjectWithExam(): Flow<List<SubjectWithExam>>
 
     @Transaction
-    @Query("SELECT * FROM subject, exam WHERE exam.date >= :minDate AND exam.date <= :maxDate")
+    @Query("SELECT * FROM subject, exam WHERE exam.due_date >= :minDate AND exam.due_date <= :maxDate")
     fun getAllSubjectWithExam(minDate: Long, maxDate: Long): Flow<List<SubjectWithExam>>
 
     @Transaction
@@ -62,16 +62,16 @@ interface SubjectDao {
     suspend fun deleteSubjectById(id: String)
 
 
-    @Transaction
-    @Query(
-        "SELECT * " +
-                "FROM subject, exam, homework " +
-                "WHERE CASE WHEN :scored " +
-                "THEN exam.score IS NOT NULL AND homework.score IS NOT NULL " +
-                "ELSE exam.score IS NULL AND homework.score IS NULL " +
-                "END"
-    )
-    fun getSubjectWithExamAndHomework(scored: Boolean): Flow<List<SubjectWithExamAndHomework>>
+//    @Transaction
+//    @Query(
+//        "SELECT * " +
+//                "FROM subject, exam, homework " +
+//                "WHERE CASE WHEN :scored " +
+//                "THEN exam.score IS NOT NULL AND homework.completed = 1 " +
+//                "ELSE exam.score IS NULL AND homework.completed = 0 " +
+//                "END"
+//    )
+//    fun getSubjectWithExamAndHomework(scored: Boolean): Flow<List<SubjectWithExamAndHomework>>
 
     @Query("DELETE FROM subject")
     suspend fun deleteAllSubject()

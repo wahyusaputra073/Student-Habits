@@ -16,11 +16,12 @@ const val USER_COLLECTION_ID = "user"
 fun Exam.toHashMap(converter: Converter): HashMap<String, *> {
     return hashMapOf(
         "title" to title,
-        "description" to description,
-        "due_date" to converter.dateToLong(date),
-        "reminder" to reminder?.let { converter.timeToString(it) },
+        "notes" to notes,
+        "due_date" to converter.localDateTimeToLong(dueDate),
+        "deadline" to converter.localDateTimeToLong(deadline),
+        "due_reminder" to dueReminder?.let { converter.localDateTimeToLong(it) },
+        "deadline_reminder" to deadlineReminder?.let { converter.localDateTimeToLong(it) },
         "subject_id" to subjectId,
-        "attachments" to converter.listOfAttachmentToJsonString(attachments),
         "score" to score,
         "category" to converter.examCategoryToString(category)
     )
@@ -30,14 +31,16 @@ fun DocumentSnapshot.toExam(converter: Converter): Exam {
     return Exam(
         id = id,
         title = get("title", String::class.java)!!,
-        description = get("description", String::class.java) ?: "",
-        date = get("due_date", Long::class.java)
-            .let { converter.longToDate(it!!) },
-        reminder = get("reminder", String::class.java)
-            .let { converter.stringToTime(it!!) },
+        notes = get("notes", String::class.java) ?: "",
+        dueDate = get("due_date", Long::class.java)
+            .let { converter.longToLocalDateTime(it!!) },
+        deadline = get("deadline", Long::class.java)
+            .let { converter.longToLocalDateTime(it!!) },
+        dueReminder = get("due_reminder", Long::class.java)
+            .let { converter.longToLocalDateTime(it!!) },
+        deadlineReminder = get("deadline_reminder", Long::class.java)
+            .let { converter.longToLocalDateTime(it!!) },
         subjectId = get("subject_id", String::class.java)!!,
-        attachments = get("attachments", String::class.java)
-            .let { converter.jsonStringToListOfAttachment(it!!) },
         score = get("score", Int::class.java),
         category = get("category", String::class.java)
             .let { converter.stringToExamCategory(it!!) }
@@ -47,13 +50,13 @@ fun DocumentSnapshot.toExam(converter: Converter): Exam {
 fun Homework.toHashMap(converter: Converter): HashMap<String, *> {
     return hashMapOf(
         "title" to title,
-        "description" to description,
-        "due_date" to converter.dateToLong(dueDate),
+        "notes" to notes,
+        "due_date" to converter.localDateTimeToLong(dueDate),
+        "deadline" to converter.localDateTimeToLong(deadline),
         "completed" to completed,
-        "reminder" to reminder?.let { converter.timeToString(it) },
+        "due_reminder" to dueReminder?.let { converter.localDateTimeToLong(it) },
+        "deadline_reminder" to deadlineReminder?.let { converter.localDateTimeToLong(it) },
         "subject_id" to subjectId,
-        "attachments" to converter.listOfAttachmentToJsonString(attachments),
-        "score" to score
     )
 }
 
@@ -61,45 +64,39 @@ fun DocumentSnapshot.toHomework(converter: Converter): Homework {
     return Homework(
         id = id,
         title = get("title", String::class.java)!!,
-        description = get("description", String::class.java) ?: "",
+        notes = get("notes", String::class.java) ?: "",
         dueDate = get("due_date", Long::class.java)
-            .let { converter.longToDate(it!!) },
+            .let { converter.longToLocalDateTime(it!!) },
+        deadline = get("deadline", Long::class.java)
+            .let { converter.longToLocalDateTime(it!!) },
         completed = get("completed", Boolean::class.java) ?: false,
-        reminder = get("reminder", String::class.java)
-            .let { converter.stringToTime(it!!) },
+        dueReminder = get("due_reminder", Long::class.java)
+            .let { converter.longToLocalDateTime(it!!) },
+        deadlineReminder = get("deadline_reminder", Long::class.java)
+            .let { converter.longToLocalDateTime(it!!) },
         subjectId = get("subject_id", String::class.java)!!,
-        attachments = get("attachments", String::class.java)
-            .let { converter.jsonStringToListOfAttachment(it!!) },
-        score = get("score", Int::class.java)
     )
 }
 
 fun Reminder.toHashMap(converter: Converter): HashMap<String, *> {
     return hashMapOf(
         "title" to title,
-        "description" to description,
-        "due_date" to converter.dateToLong(date),
-        "reminder" to converter.timeToString(time),
-        "color" to converter.colorToInt(color),
-        "completed" to completed,
-        "attachments" to converter.listOfAttachmentToJsonString(attachments)
+        "notes" to notes,
+        "reminder_dates" to reminderDates.map {
+            converter.localDateTimeToLong(it)
+        },
     )
 }
 
+@Suppress("UNCHECKED_CAST")
 fun DocumentSnapshot.toReminder(converter: Converter): Reminder {
     return Reminder(
         id = id,
         title = get("title", String::class.java)!!,
-        description = get("description", String::class.java) ?: "",
-        date = get("due_date", Long::class.java)
-            .let { converter.longToDate(it!!) },
-        time = get("reminder", String::class.java)
-            .let { converter.stringToTime(it!!) },
-        color = get("color", Int::class.java)
-            .let { converter.intToColor(it!!) },
-        completed = get("completed", Boolean::class.java) ?: false,
-        attachments = get("attachments", String::class.java)
-            .let { converter.jsonStringToListOfAttachment(it!!) }
+        notes = get("notes", String::class.java) ?: "",
+        reminderDates = (get("reminder_dates") as? List<Long>)?.map {
+            converter.longToLocalDateTime(it)
+        } ?: emptyList()
     )
 }
 
@@ -172,7 +169,7 @@ fun ThesisWithTask.toHashMap(converter: Converter): HashMap<String, *> {
                 "thesis_id" to it.thesisId,
                 "name" to it.name,
                 "is_completed" to it.isCompleted,
-                "due_date" to converter.dateToLong(it.dueDate)
+                "due_date" to converter.localDateToLong(it.dueDate)
             )
         }
     )
@@ -192,7 +189,7 @@ fun DocumentSnapshot.toThesisWithTask(converter: Converter): ThesisWithTask {
             thesisId = taskDto["thesis_id"] as String,
             name = taskDto["name"] as String,
             isCompleted = taskDto["is_completed"] as Boolean,
-            dueDate = converter.longToDate(taskDto["due_date"] as Long)
+            dueDate = converter.longToLocalDate(taskDto["due_date"] as Long)
         )
     }
     return ThesisWithTask(thesis, tasks)
@@ -204,6 +201,6 @@ fun Task.toHashMap(converter: Converter): HashMap<String, *> {
         "thesis_id" to thesisId,
         "name" to name,
         "is_completed" to isCompleted,
-        "due_date" to converter.dateToLong(dueDate)
+        "due_date" to converter.localDateToLong(dueDate)
     )
 }

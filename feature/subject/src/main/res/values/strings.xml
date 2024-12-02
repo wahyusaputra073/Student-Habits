@@ -36,4 +36,10 @@
     <string name="are_you_sure_you_want_to_delete_this_subject">Are you sure you want to delete this subject?</string>
     <string name="delete_subject">Delete Subject</string>
     <string name="subject_deleted_successfully">Subject deleted successfully</string>
+    <string name="edit">Edit</string>
+    <string name="create">Create</string>
+    <string name="please_enter_subject_name">Please enter subject name</string>
+    <string name="description">Description</string>
+    <string name="add_description">Add description...</string>
+    <string name="lecturer">Lecturer</string>
 </resources>

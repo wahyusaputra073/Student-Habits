@@ -47,4 +47,7 @@ interface ExamDao {
     @Query("DELETE FROM exam")
     suspend fun deleteAllExam()
 
+    @Query("UPDATE exam SET score = :score WHERE id = :examId")
+    suspend fun updateExamScore(examId: String, score: Int?)
+
 }

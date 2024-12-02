@@ -13,6 +13,8 @@ interface HomeworkRepository {
 
     fun updateHomework(homework: Homework): Flow<Result<Unit>>
 
+    fun updateCompletedStatus(homeworkId: String, isCompleted: Boolean): Flow<Result<Unit>>
+
     fun deleteHomework(homework: Homework): Flow<Result<Unit>>
 
 }

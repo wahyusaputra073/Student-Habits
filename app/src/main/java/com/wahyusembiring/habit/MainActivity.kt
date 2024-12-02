@@ -93,9 +93,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onPause() {
-        viewModel.onActivityPause()
-        super.onPause()
-    }
-
 }

@@ -77,6 +77,18 @@ class ExamService @Inject constructor(
             .await()
     }
 
+    suspend fun updateExamScore(examId: String, score: Int?) {
+        val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
+        val document = db
+            .collection(USER_COLLECTION_ID)
+            .document(user.id)
+            .collection(EXAM_COLLECTION_ID)
+            .document(examId)
+        document
+            .update("score", score)
+            .await()
+    }
+
     suspend fun deleteExam(exam: Exam) {
         val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
         val document = db

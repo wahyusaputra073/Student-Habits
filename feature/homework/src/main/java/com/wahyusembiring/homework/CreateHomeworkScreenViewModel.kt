@@ -1,20 +1,20 @@
 package com.wahyusembiring.homework
 
 import android.app.Application
-import android.content.Context
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wahyusembiring.common.util.scheduleReminder
 import com.wahyusembiring.data.Result
 import com.wahyusembiring.data.model.Attachment
-import com.wahyusembiring.data.model.Time
 import com.wahyusembiring.data.model.entity.Homework
 import com.wahyusembiring.data.model.entity.Subject
 import com.wahyusembiring.data.repository.EventRepository
-import com.wahyusembiring.data.repository.HomeworkRepository
 import com.wahyusembiring.data.repository.SubjectRepository
+import com.wahyusembiring.ui.ReminderOption
+import com.wahyusembiring.ui.util.ReminderType
 import com.wahyusembiring.ui.util.UIText
+import com.wahyusembiring.ui.util.toLocalDateTime
+import com.wahyusembiring.ui.util.toReminderOption
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -29,10 +29,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.ZoneId
-import java.util.Date
 import java.util.UUID
-import javax.inject.Inject
 
 @HiltViewModel(assistedFactory = CreateHomeworkScreenViewModel.Factory::class)
 class CreateHomeworkScreenViewModel @AssistedInject constructor(
@@ -59,22 +56,94 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
         viewModelScope.launch {
             when (event) {
                 is CreateHomeworkUIEvent.OnHomeworkTitleChanged -> onHomeworkTitleChanged(event.title)
-                is CreateHomeworkUIEvent.OnExamDescriptionChanged -> onExamDescriptionChanged(event.title)
+                is CreateHomeworkUIEvent.OnNotesChanged -> onNotesChanged(event.notes)
                 is CreateHomeworkUIEvent.OnSaveHomeworkButtonClicked -> onSaveHomeworkButtonClick()
-                is CreateHomeworkUIEvent.OnPickDateButtonClicked -> onDatePickerClick()
-                is CreateHomeworkUIEvent.OnPickTimeButtonClicked -> onTimePickerClick()
                 is CreateHomeworkUIEvent.OnPickSubjectButtonClicked -> onSubjectPickerClick()
-                is CreateHomeworkUIEvent.OnPickAttachmentButtonClicked -> onAttachmentPickerClick()
-                is CreateHomeworkUIEvent.OnAttachmentPicked -> onAttachmentPicked(event.attachments)
                 is CreateHomeworkUIEvent.OnConfirmSaveHomeworkClick -> onConfirmSaveHomeworkClick()
-                is CreateHomeworkUIEvent.OnDatePicked -> onDateSelected(event.date)
                 is CreateHomeworkUIEvent.OnDismissPopUp -> onDismissPopUp(event.popUp)
                 is CreateHomeworkUIEvent.OnSubjectPicked -> onSubjectSelected(event.subject)
-                is CreateHomeworkUIEvent.OnTimePicked -> onTimeSelected(event.time)
                 is CreateHomeworkUIEvent.OnHomeworkSavedButtonClicked -> onHomeworkSavedButtonClicked()
-                CreateHomeworkUIEvent.OnNavigateBackButtonClick -> onNavigateBackButtonClick()
-                CreateHomeworkUIEvent.OnNavigateToSubjectScreenRequest -> onNavigateToSubjectScreenRequest()
+                is CreateHomeworkUIEvent.OnNavigateBackButtonClick -> onNavigateBackButtonClick()
+                is CreateHomeworkUIEvent.OnNavigateToSubjectScreenRequest -> onNavigateToSubjectScreenRequest()
+                is CreateHomeworkUIEvent.OnCustomDeadlineReminderButtonClicked -> onCustomDeadlineReminderButtonClicked()
+                is CreateHomeworkUIEvent.OnCustomDueReminderButtonClicked -> onCustomDueReminderButtonClicked()
+                is CreateHomeworkUIEvent.OnDeadlineDateChanged -> onDeadlineDateChanged(event.deadlineDate)
+                is CreateHomeworkUIEvent.OnDeadlineReminderChanged -> onDeadlineReminderChanged(event.reminderOption)
+                is CreateHomeworkUIEvent.OnDueDateChanged -> onDueDateChanged(event.dueDate)
+                is CreateHomeworkUIEvent.OnDueReminderChanged -> onDueReminderChanged(event.reminderOption)
+                is CreateHomeworkUIEvent.OnPickDuePeriodButtonClicked -> onPickDuePeriodButtonClicked()
+                is CreateHomeworkUIEvent.OnTaskCompletedStatusChanged -> onTaskCompletedStatusChanged(event.isCompleted)
             }
+        }
+    }
+
+    private fun onTaskCompletedStatusChanged(completed: Boolean) {
+        viewModelScope.launch {
+            eventRepository.updateCompletedStatus(homeworkId, completed).collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _state.update {
+                            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.Loading)
+                        }
+                    }
+                    is Result.Error -> {
+                        _state.update {
+                            it.copy(
+                                popUps = it.popUps
+                                    .minus(CreateHomeworkScreenPopUp.Loading)
+                                    .plus(CreateHomeworkScreenPopUp.Error(UIText.DynamicString(result.throwable.message ?: "Unknown error")))
+                            )
+                        }
+                    }
+                    is Result.Success -> {
+                        _state.update {
+                            it.copy(popUps = it.popUps.minus(CreateHomeworkScreenPopUp.Loading))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun onPickDuePeriodButtonClicked() {
+        _state.update {
+            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.DuePeriodPicker)
+        }
+    }
+
+    private fun onDueReminderChanged(reminderOption: ReminderOption) {
+        _state.update {
+            it.copy(dueReminder = reminderOption)
+        }
+    }
+
+    private fun onDueDateChanged(dueDate: LocalDateTime) {
+        _state.update {
+            it.copy(dueDate = dueDate)
+        }
+    }
+
+    private fun onDeadlineReminderChanged(reminderOption: ReminderOption) {
+        _state.update {
+            it.copy(deadlineReminder = reminderOption)
+        }
+    }
+
+    private fun onDeadlineDateChanged(deadlineDate: LocalDateTime) {
+        _state.update {
+            it.copy(deadline = deadlineDate)
+        }
+    }
+
+    private fun onCustomDueReminderButtonClicked() {
+        _state.update {
+            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.DueReminderPicker)
+        }
+    }
+
+    private fun onCustomDeadlineReminderButtonClicked() {
+        _state.update {
+            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.DeadlineReminderPicker)
         }
     }
 
@@ -97,33 +166,9 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
     }
 
 
-    private fun onAttachmentPicked(attachments: List<Attachment>) {
-        _state.update {
-            it.copy(attachments = attachments)
-        }
-    }
-
-    private suspend fun onAttachmentPickerClick() {
-        _state.update {
-            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.AttachmentPicker)
-        }
-    }
-
     private suspend fun onSubjectPickerClick() {
         _state.update {
             it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.SubjectPicker)
-        }
-    }
-
-    private suspend fun onTimePickerClick() {
-        _state.update {
-            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.TimePicker)
-        }
-    }
-
-    private suspend fun onDatePickerClick() {
-        _state.update {
-            it.copy(popUps = it.popUps + CreateHomeworkScreenPopUp.DatePicker)
         }
     }
 
@@ -138,11 +183,12 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
             val homework = Homework(
                 id = if (homeworkId == "-1") UUID.randomUUID().toString() else homeworkId,
                 title = _state.value.homeworkTitle.ifBlank { throw MissingRequiredFieldException.Title() },
-                dueDate = _state.value.date ?: throw MissingRequiredFieldException.Date(),
+                dueDate = _state.value.dueDate,
+                deadline = _state.value.deadline,
+                dueReminder = _state.value.dueReminder?.toLocalDateTime(_state.value.dueDate),
+                deadlineReminder = _state.value.deadlineReminder?.toLocalDateTime(_state.value.deadline),
                 subjectId = _state.value.subject?.id ?: throw MissingRequiredFieldException.Subject(),
-                reminder = _state.value.time,
-                description = _state.value.description,
-                attachments = _state.value.attachments,
+                notes = _state.value.notes,
                 completed = _state.value.isCompleted
             )
 
@@ -156,7 +202,6 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
         } catch (e: MissingRequiredFieldException) {
             val errorMessage = when (e) {
                 is MissingRequiredFieldException.Title -> UIText.StringResource(R.string.homework_title_is_required)
-                is MissingRequiredFieldException.Date -> UIText.StringResource(R.string.due_date_is_required)
                 is MissingRequiredFieldException.Subject -> UIText.StringResource(R.string.subject_is_required)
             }
             _state.update {
@@ -184,6 +229,22 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
                         }
                     }
                     is Result.Success -> {
+                        homework.dueReminder?.let { dueReminder ->
+                            scheduleReminder(
+                                context = application.applicationContext,
+                                localDateTime = dueReminder,
+                                title = homework.title,
+                                reminderId = Pair(homework, dueReminder).hashCode()
+                            )
+                        }
+                        homework.deadlineReminder?.let { deadlineReminder ->
+                            scheduleReminder(
+                                context = application.applicationContext,
+                                localDateTime = deadlineReminder,
+                                title = homework.title,
+                                reminderId = Pair(homework, deadlineReminder).hashCode()
+                            )
+                        }
                         _state.update {
                             it.copy(
                                 popUps = it.popUps
@@ -194,18 +255,6 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
                     }
                 }
             }
-
-        if (homework.reminder != null) {
-            scheduleReminder(
-                context = application.applicationContext,
-                localDateTime = LocalDateTime.of(
-                    homework.dueDate,
-                    homework.reminder
-                ),
-                title = homework.title,
-                reminderId = homework.id.hashCode()
-            )
-        }
     }
 
     private suspend fun saveHomework(homework: Homework) {
@@ -227,6 +276,22 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
                         }
                     }
                     is Result.Success -> {
+                        if (homework.dueReminder != null) {
+                            scheduleReminder(
+                                application.applicationContext,
+                                homework.dueReminder!!,
+                                homework.title,
+                                homework.id.hashCode()
+                            )
+                        }
+                        if (homework.deadlineReminder != null) {
+                            scheduleReminder(
+                                application.applicationContext,
+                                homework.deadlineReminder!!,
+                                homework.title,
+                                homework.id.hashCode()
+                            )
+                        }
                         _state.update {
                             it.copy(
                                 popUps = it.popUps
@@ -237,18 +302,6 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
                     }
                 }
             }
-
-        if (homework.reminder != null) {
-            scheduleReminder(
-                context = application.applicationContext,
-                localDateTime = LocalDateTime.of(
-                    homework.dueDate,
-                    homework.reminder
-                ),
-                title = homework.title,
-                reminderId = homework.id.hashCode()
-            )
-        }
     }
 
     private fun onHomeworkTitleChanged(title: String) {
@@ -257,33 +310,15 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
         }
     }
 
-    private fun onExamDescriptionChanged(description: String) {
+    private fun onNotesChanged(description: String) {
         _state.update {
-            it.copy(description = description)
-        }
-    }
-
-    private fun onDateSelected(date: LocalDate) {
-        _state.update {
-            it.copy(date = date)
-        }
-    }
-
-    private fun onTimeSelected(time: LocalTime) {
-        _state.update {
-            it.copy(time = time)
+            it.copy(notes = description)
         }
     }
 
     private fun onSubjectSelected(subject: Subject) {
         _state.update {
             it.copy(subject = subject)
-        }
-    }
-
-    private fun onAttachmentsConfirmed(attachments: List<Attachment>) {
-        _state.update {
-            it.copy(attachments = attachments)
         }
     }
 
@@ -310,18 +345,23 @@ class CreateHomeworkScreenViewModel @AssistedInject constructor(
                             _state.update {
                                 it.copy(popUps = it.popUps.minus(CreateHomeworkScreenPopUp.Loading))
                             }
-                            result.data.collect { homeworkDto ->
-                                if (homeworkDto == null) return@collect
+                            result.data.collect { homeworkWithSubject ->
+                                if (homeworkWithSubject == null) return@collect
                                 _state.update {
                                     it.copy(
                                         isEditMode = true,
-                                        homeworkTitle = homeworkDto.homework.title,
-                                        date = homeworkDto.homework.dueDate,
-                                        time = homeworkDto.homework.reminder,
-                                        subject = homeworkDto.subject,
-                                        attachments = homeworkDto.homework.attachments,
-                                        isCompleted = homeworkDto.homework.completed,
-                                        description = homeworkDto.homework.description,
+                                        homeworkTitle = homeworkWithSubject.homework.title,
+                                        dueDate = homeworkWithSubject.homework.dueDate,
+                                        dueReminder = with(homeworkWithSubject.homework) {
+                                            dueReminder?.toReminderOption(dueDate, ReminderType.DUE)
+                                        },
+                                        deadline = homeworkWithSubject.homework.deadline,
+                                        deadlineReminder = with(homeworkWithSubject.homework) {
+                                            deadlineReminder?.toReminderOption(deadline, ReminderType.DEADLINE)
+                                        },
+                                        notes = homeworkWithSubject.homework.notes,
+                                        subject = homeworkWithSubject.subject,
+                                        isCompleted = homeworkWithSubject.homework.completed,
                                     )
                                 }
                             }

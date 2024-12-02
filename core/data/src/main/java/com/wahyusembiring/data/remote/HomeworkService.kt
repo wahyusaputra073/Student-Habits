@@ -84,4 +84,16 @@ class HomeworkService @Inject constructor(
             .await()
     }
 
+    suspend fun updateCompletedStatus(homeworkId: String, isCompleted: Boolean) {
+        val user = authRepository.currentUser.first() ?: throw UserIsNotSignInException()
+        val document = db
+            .collection(USER_COLLECTION_ID)
+            .document(user.id)
+            .collection(HOMEWORK_COLLECTION_ID).document(homeworkId)
+
+        document
+            .update("completed", isCompleted)
+            .await()
+    }
+
 }

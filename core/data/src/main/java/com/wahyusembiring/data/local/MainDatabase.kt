@@ -32,7 +32,7 @@ import kotlinx.coroutines.asExecutor
         Thesis::class,
         Task::class
     ],
-    version = 2,
+    version = 1,
     exportSchema = false
 )
 @TypeConverters(Converter::class)

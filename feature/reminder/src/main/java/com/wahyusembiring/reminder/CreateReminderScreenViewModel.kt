@@ -12,7 +12,6 @@ import com.wahyusembiring.common.util.launch
 import com.wahyusembiring.common.util.scheduleReminder
 import com.wahyusembiring.data.Result
 import com.wahyusembiring.data.model.Attachment
-import com.wahyusembiring.data.model.Time
 import com.wahyusembiring.data.model.entity.Reminder
 import com.wahyusembiring.data.repository.EventRepository
 import com.wahyusembiring.ui.util.UIText
@@ -79,12 +78,8 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
                                     it.copy(
                                         isEditMode = true,
                                         title = reminderDto.title,
-                                        date = reminderDto.date,
-                                        time = reminderDto.time,
-                                        color = reminderDto.color,
-                                        attachments = reminderDto.attachments,
-                                        description = reminderDto.description,
-                                        isCompleted = reminderDto.completed
+                                        reminderDates = reminderDto.reminderDates,
+                                        notes = reminderDto.notes
                                     )
                                 }
                             }
@@ -98,21 +93,32 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
     fun onUIEvent(event: CreateReminderScreenUIEvent) {
         when (event) {
             is CreateReminderScreenUIEvent.OnTitleChanged -> onTitleChanged(event.title)
-            is CreateReminderScreenUIEvent.OnReminderDescriptionChanged -> onReminderDescriptionChanged(event.title)
-            is CreateReminderScreenUIEvent.OnDatePickerButtonClick -> launch { onDatePickerButtonClick() }
-            is CreateReminderScreenUIEvent.OnTimePickerButtonClick -> launch { onTimePickerButtonClick() }
-            is CreateReminderScreenUIEvent.OnColorPickerButtonClick -> launch { onColorPickerButtonClick() }
-            is CreateReminderScreenUIEvent.OnAttachmentPickerButtonClick -> launch { onAttachmentPickerButtonClick() }
             is CreateReminderScreenUIEvent.OnSaveButtonClicked -> launch { onSaveButtonClicked() }
-            is CreateReminderScreenUIEvent.OnAttachmentPicked -> onAttachmentPicked(event.attachments)
-            is CreateReminderScreenUIEvent.OnColorPicked -> onColorPicked(event.color)
-            is CreateReminderScreenUIEvent.OnDatePicked -> onDatePicked(event.date)
             is CreateReminderScreenUIEvent.OnSaveReminderConfirmClick -> launch { onSaveReminderConfirmClick() }
-            is CreateReminderScreenUIEvent.OnTimePicked -> onTimePicked(event.time)
             is CreateReminderScreenUIEvent.OnNavigateUpButtonClick -> onNavigateUpButtonClick()
             is CreateReminderScreenUIEvent.OnPopDismiss -> onPopDismiss(event.popUp)
             is CreateReminderScreenUIEvent.OnReminderSavedOkButtonClick -> onReminderSavedOkButtonClick()
+            is CreateReminderScreenUIEvent.OnAddReminderDate -> onAddReminderDate(event.date)
+            is CreateReminderScreenUIEvent.OnAddReminderDateButtonClick -> onAddReminderDateButtonClick()
+            is CreateReminderScreenUIEvent.OnDeleteReminderDateButtonClick -> onDeleteReminderDateButtonClick(event.date)
+            is CreateReminderScreenUIEvent.OnNotesChanged -> onNotesChanged(event.notes)
         }
+    }
+
+    private fun onNotesChanged(notes: String) {
+        _state.update { it.copy(notes = notes) }
+    }
+
+    private fun onDeleteReminderDateButtonClick(date: LocalDateTime) {
+        _state.update { it.copy(reminderDates = it.reminderDates - date) }
+    }
+
+    private fun onAddReminderDateButtonClick() {
+        _state.update { it.copy(popUps = it.popUps + CreateReminderScreenPopUp.DateTimePicker) }
+    }
+
+    private fun onAddReminderDate(dateTime: LocalDateTime) {
+        _state.update { it.copy(reminderDates = it.reminderDates + dateTime) }
     }
 
     private fun onReminderSavedOkButtonClick() {
@@ -127,23 +133,6 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
         _navigationEvent.trySend(CreateReminderScreenNavigationEvent.NavigateUp)
     }
 
-    private fun onTimePicked(time: LocalTime) {
-        _state.update { it.copy(time = time) }
-    }
-
-    private fun onDatePicked(date: LocalDate) {
-        _state.update { it.copy(date = date) }
-    }
-
-    private fun onColorPicked(color: Color) {
-        _state.update { it.copy(color = color) }
-    }
-
-    private fun onAttachmentPicked(attachments: List<Attachment>) {
-        _state.update { it.copy(attachments = attachments) }
-    }
-
-
     private fun onSaveButtonClicked() {
         _state.update { it.copy(popUps = it.popUps + CreateReminderScreenPopUp.SaveConfirmationDialog) }
     }
@@ -153,12 +142,8 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
             val reminder = Reminder(
                 id = if (reminderId != "-1") reminderId else UUID.randomUUID().toString(),
                 title = _state.value.title.ifBlank { throw MissingRequiredFieldException.Title() },
-                date = _state.value.date ?: throw MissingRequiredFieldException.Date(),
-                time = _state.value.time ?: throw MissingRequiredFieldException.Date(),
-                color = _state.value.color,
-                attachments = _state.value.attachments,
-                description = _state.value.description,
-                completed = _state.value.isCompleted
+                reminderDates = _state.value.reminderDates.ifEmpty { throw MissingRequiredFieldException.DateTime() },
+                notes = _state.value.notes
             )
             viewModelScope.launch {
                 if (reminderId == "-1") {
@@ -170,8 +155,7 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
         } catch (e: MissingRequiredFieldException) {
             val errorMessage = when (e) {
                 is MissingRequiredFieldException.Title -> UIText.StringResource(R.string.title_is_required)
-                is MissingRequiredFieldException.Date -> UIText.StringResource(R.string.date_is_required)
-                is MissingRequiredFieldException.Time -> UIText.StringResource(R.string.time_is_required)
+                is MissingRequiredFieldException.DateTime -> UIText.StringResource(R.string.at_least_one_date_is_required)
             }
             _state.update {
                 it.copy(popUps = it.popUps + CreateReminderScreenPopUp.Error(errorMessage))
@@ -195,6 +179,14 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
                     }
                 }
                 is Result.Success -> {
+                    reminder.reminderDates.forEach {
+                        scheduleReminder(
+                            context = application.applicationContext,
+                            localDateTime = it,
+                            title = reminder.title,
+                            reminderId = Pair(reminder, it).hashCode()
+                        )
+                    }
                     _state.update {
                         it.copy(
                             popUps = it.popUps
@@ -205,12 +197,6 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
                 }
             }
         }
-        scheduleReminder(
-            context = application.applicationContext,
-            localDateTime = LocalDateTime.of(reminder.date, reminder.time),
-            title = reminder.title,
-            reminderId = reminder.id.hashCode()
-        )
     }
 
     private suspend fun updateReminder(reminder: Reminder) {
@@ -229,6 +215,14 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
                     }
                 }
                 is Result.Success -> {
+                    reminder.reminderDates.forEach {
+                        scheduleReminder(
+                            context = application.applicationContext,
+                            localDateTime = it,
+                            title = reminder.title,
+                            reminderId = Pair(reminder, it).hashCode()
+                        )
+                    }
                     _state.update {
                         it.copy(
                             popUps = it.popUps
@@ -239,12 +233,6 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
                 }
             }
         }
-        scheduleReminder(
-            context = application.applicationContext,
-            localDateTime = LocalDateTime.of(reminder.date, reminder.time),
-            title = reminder.title,
-            reminderId = reminder.id.hashCode()
-        )
     }
 
 
@@ -253,27 +241,4 @@ class CreateReminderScreenViewModel @AssistedInject constructor(
             it.copy(title = title)
         }
     }
-
-    private fun onReminderDescriptionChanged(description: String) {
-        _state.update {
-            it.copy(description = description)
-        }
-    }
-
-    private fun onDatePickerButtonClick() {
-        _state.update { it.copy(popUps = it.popUps + CreateReminderScreenPopUp.DatePicker) }
-    }
-
-    private fun onTimePickerButtonClick() {
-        _state.update { it.copy(popUps = it.popUps + CreateReminderScreenPopUp.TimePicker) }
-    }
-
-    private fun onColorPickerButtonClick() {
-        _state.update { it.copy(popUps = it.popUps + CreateReminderScreenPopUp.ColorPicker) }
-    }
-
-    private fun onAttachmentPickerButtonClick() {
-        _state.update { it.copy(popUps = it.popUps + CreateReminderScreenPopUp.AttachmentPicker) }
-    }
-
 }

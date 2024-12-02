@@ -6,7 +6,13 @@ import com.wahyusembiring.ui.component.eventcard.EventCard
 import com.wahyusembiring.ui.component.scoredialog.ScoreDialog
 
 data class OverviewScreenUIState(
-    val eventCards: List<EventCard> = emptyList(),
+    val todayEvents: List<Any> = emptyList(),
+    val tomorrowEvents: List<Any> = emptyList(),
+    val day3rdEvents: List<Any> = emptyList(),
+    val day4thEvents: List<Any> = emptyList(),
+    val day5thEvents: List<Any> = emptyList(),
+    val day6thEvents: List<Any> = emptyList(),
+    val day7thEvents: List<Any> = emptyList(),
     val popUps: List<OverviewScreenPopUp> = emptyList(),
 )
 

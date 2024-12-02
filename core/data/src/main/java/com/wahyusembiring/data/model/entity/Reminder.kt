@@ -2,12 +2,12 @@ package com.wahyusembiring.data.model.entity
 
 import android.net.Uri
 import androidx.compose.ui.graphics.Color
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.wahyusembiring.data.model.Attachment
-import com.wahyusembiring.data.model.DeadlineTime
-import com.wahyusembiring.data.model.Time
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.Date
 import java.util.UUID
@@ -20,17 +20,8 @@ data class Reminder(
 
     val title: String,
 
-    val date: LocalDate,
+    @ColumnInfo("reminder_dates")
+    val reminderDates: List<LocalDateTime>,
 
-    val time: LocalTime,
-
-    val times: DeadlineTime,
-
-    val color: Color,
-
-    val completed: Boolean = false,
-
-    val attachments: List<Attachment>,
-
-    val description: String,
+    val notes: String,
 )

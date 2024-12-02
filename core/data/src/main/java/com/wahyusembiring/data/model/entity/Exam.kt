@@ -6,9 +6,9 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.wahyusembiring.data.model.Attachment
-import com.wahyusembiring.data.model.DeadlineTime
-import com.wahyusembiring.data.model.Time
+import kotlinx.serialization.Serializable
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.Date
 import java.util.UUID
@@ -31,11 +31,14 @@ data class Exam(
 
     val title: String,
 
-    val date: LocalDate,
+    @ColumnInfo(name = "due_date")
+    val dueDate: LocalDateTime,
 
-    val reminder: LocalTime?,
+    val deadline: LocalDateTime,
 
-    val deadline: DeadlineTime?,
+    val dueReminder: LocalDateTime?,
+
+    val deadlineReminder: LocalDateTime?,
 
     @ColumnInfo(name = "subject_id")
     val subjectId: String,
@@ -44,11 +47,10 @@ data class Exam(
 
     val score: Int? = null,
 
-    val attachments: List<Attachment>,
-
-    val description: String,
+    val notes: String,
 )
 
+@Serializable
 enum class ExamCategory {
     WRITTEN, ORAL, PRACTICAL
 }

@@ -28,6 +28,8 @@ import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KMutableProperty0
@@ -111,4 +113,10 @@ fun <T> CollectAsOneTimeEvent(eventFlow: Flow<T>, onEvent: suspend (event: T) ->
             eventFlow.collectLatest(onEvent)
         }
     }
+}
+
+fun LocalDateTime.toString(pattern: String): String {
+    val locale = Locale.getDefault()
+    val formatter = DateTimeFormatter.ofPattern(pattern, locale)
+    return this.format(formatter)
 }

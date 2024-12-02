@@ -129,13 +129,13 @@ class CalendarScreenViewModel @Inject constructor(
                     }
                 }
                 is Reminder -> {
-                    eventRepository.updateReminder(event.copy(completed = checked)).collect { result ->
-                        when (result) {
-                            is Result.Loading -> {}
-                            is Result.Error -> { throw result.throwable }
-                            is Result.Success -> {}
-                        }
-                    }
+//                    eventRepository.updateReminder(event.copy(completed = checked)).collect { result ->
+//                        when (result) {
+//                            is Result.Loading -> {}
+//                            is Result.Error -> { throw result.throwable }
+//                            is Result.Success -> {}
+//                        }
+//                    }
                 }
             }
         }

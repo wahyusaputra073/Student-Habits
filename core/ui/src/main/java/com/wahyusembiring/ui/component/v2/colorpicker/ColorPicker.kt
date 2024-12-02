@@ -1,12 +1,17 @@
-package com.wahyusembiring.ui.component.popup.picker.colorpicker
+package com.wahyusembiring.ui.component.v2.colorpicker
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -32,6 +37,37 @@ import com.wahyusembiring.ui.component.modalbottomsheet.component.CloseAndSaveHe
 import com.wahyusembiring.ui.theme.HabitTheme
 import com.wahyusembiring.ui.theme.spacing
 import kotlinx.coroutines.launch
+
+@Composable
+fun ColorPickerButton(
+    modifier: Modifier = Modifier,
+    colors: List<Color>,
+    onColorSelected: (color: Color) -> Unit
+) {
+    require(colors.size <= 6) { "Currently more than 6 colors is not supported" }
+    Row(
+        modifier = modifier,
+    ) {
+        for (color in colors) {
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .padding(MaterialTheme.spacing.Medium)
+                        .background(
+                            color = color,
+                            shape = RoundedCornerShape(50)
+                        )
+                        .border(4.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
+                        .border(2.dp, MaterialTheme.colorScheme.surface, RoundedCornerShape(50))
+                )
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -10,9 +10,10 @@ import com.wahyusembiring.data.model.entity.Reminder
 import com.wahyusembiring.data.repository.EventRepository
 import com.wahyusembiring.datetime.Moment
 import com.wahyusembiring.datetime.formatter.FormattingStyle
+import com.wahyusembiring.overview.util.filterByDate
+import com.wahyusembiring.overview.util.getEventInRange
 import com.wahyusembiring.ui.component.eventcard.EventCard
 import com.wahyusembiring.ui.component.scoredialog.ScoreDialog
-import com.wahyusembiring.overview.util.inside
 import com.wahyusembiring.overview.util.until
 import com.wahyusembiring.ui.util.UIText
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
 
@@ -60,31 +62,15 @@ class OverviewViewModel @Inject constructor(
     private suspend fun handleAllEventQuery(data: Flow<List<Any>>) {
         data.collect { events ->
             _state.update { state ->
+                val currentDay = LocalDateTime.now()
                 state.copy(
-                    eventCards = List(6) {
-                        val currentMoment = Moment.now() + it.days
-                        EventCard(
-                            title = when (it) {
-                                0 -> UIText.StringResource(R.string.today)
-                                1 -> UIText.StringResource(R.string.tomorrow)
-                                else -> UIText.DynamicString(currentMoment.day.dayOfWeek)
-                            },
-                            date = when (it) {
-                                0, 1 -> UIText.DynamicString(
-                                    currentMoment.toString(
-                                        FormattingStyle.INDO_FULL
-                                    )
-                                )
-
-                                else -> UIText.DynamicString(
-                                    currentMoment.toString(
-                                        FormattingStyle.INDO_MEDIUM
-                                    )
-                                )
-                            },
-                            events = events inside (it.days until (it + 1).days)
-                        )
-                    }
+                    todayEvents = events.getEventInRange(currentDay until currentDay.plusDays(1)),
+                    tomorrowEvents = events.getEventInRange(currentDay.plusDays(1) until currentDay.plusDays(2)),
+                    day3rdEvents = events.getEventInRange(currentDay.plusDays(2) until currentDay.plusDays(3)),
+                    day4thEvents = events.getEventInRange(currentDay.plusDays(3) until currentDay.plusDays(4)),
+                    day5thEvents = events.getEventInRange(currentDay.plusDays(4) until currentDay.plusDays(5)),
+                    day6thEvents = events.getEventInRange(currentDay.plusDays(5) until currentDay.plusDays(6)),
+                    day7thEvents = events.getEventInRange(currentDay.plusDays(6) until currentDay.plusDays(7)),
                 )
             }
         }
@@ -213,26 +199,26 @@ class OverviewViewModel @Inject constructor(
             }
 
             is Reminder -> {
-                eventRepository.updateReminder(event.copy(completed = completed))
-                    .collect { result ->
-                        when (result) {
-                            is Result.Loading -> {
-                                _state.update { it.copy(popUps = it.popUps + OverviewScreenPopUp.Loading) }
-                            }
-                            is Result.Error -> {
-                                _state.update {
-                                    it.copy(
-                                        popUps = it.popUps
-                                            .minus(OverviewScreenPopUp.Loading)
-                                            .plus(OverviewScreenPopUp.Error(result.throwable.message ?: "Unknown error"))
-                                    )
-                                }
-                            }
-                            is Result.Success -> {
-                                _state.update { it.copy(popUps = it.popUps - OverviewScreenPopUp.Loading) }
-                            }
-                        }
-                    }
+//                eventRepository.updateReminder(event.copy(completed = completed))
+//                    .collect { result ->
+//                        when (result) {
+//                            is Result.Loading -> {
+//                                _state.update { it.copy(popUps = it.popUps + OverviewScreenPopUp.Loading) }
+//                            }
+//                            is Result.Error -> {
+//                                _state.update {
+//                                    it.copy(
+//                                        popUps = it.popUps
+//                                            .minus(OverviewScreenPopUp.Loading)
+//                                            .plus(OverviewScreenPopUp.Error(result.throwable.message ?: "Unknown error"))
+//                                    )
+//                                }
+//                            }
+//                            is Result.Success -> {
+//                                _state.update { it.copy(popUps = it.popUps - OverviewScreenPopUp.Loading) }
+//                            }
+//                        }
+//                    }
             }
         }
     }

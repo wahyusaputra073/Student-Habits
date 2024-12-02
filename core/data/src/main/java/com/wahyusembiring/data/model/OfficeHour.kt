@@ -33,10 +33,10 @@ object LocalTimeSerializer : KSerializer<LocalTime> {
       get() = PrimitiveSerialDescriptor("LocalTime", PrimitiveKind.LONG)
 
    override fun serialize(encoder: Encoder, value: LocalTime) {
-      encoder.encodeLong(value.toSecondOfDay().seconds.inWholeMilliseconds)
+      encoder.encodeInt(value.toSecondOfDay())
    }
 
    override fun deserialize(decoder: Decoder): LocalTime {
-      return LocalTime.ofSecondOfDay(Duration.ofMillis(decoder.decodeLong()).toSeconds())
+      return LocalTime.ofSecondOfDay(decoder.decodeInt().toLong())
    }
 }

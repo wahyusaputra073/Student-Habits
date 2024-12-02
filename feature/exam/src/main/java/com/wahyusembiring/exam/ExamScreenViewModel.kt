@@ -1,20 +1,22 @@
 package com.wahyusembiring.exam
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wahyusembiring.common.util.launch
 import com.wahyusembiring.common.util.scheduleReminder
 import com.wahyusembiring.data.Result
 import com.wahyusembiring.data.model.Attachment
-import com.wahyusembiring.data.model.Time
 import com.wahyusembiring.data.model.entity.Exam
 import com.wahyusembiring.data.model.entity.ExamCategory
 import com.wahyusembiring.data.model.entity.Subject
 import com.wahyusembiring.data.repository.EventRepository
 import com.wahyusembiring.data.repository.SubjectRepository
+import com.wahyusembiring.ui.ReminderOption
+import com.wahyusembiring.ui.util.ReminderType
 import com.wahyusembiring.ui.util.UIText
+import com.wahyusembiring.ui.util.toLocalDateTime
+import com.wahyusembiring.ui.util.toReminderOption
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -29,8 +31,6 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.ZoneId
-import java.util.Date
 import java.util.UUID
 
 @HiltViewModel(assistedFactory = ExamScreenViewModel.Factory::class)
@@ -58,22 +58,84 @@ class ExamScreenViewModel @AssistedInject constructor(
     fun onUIEvent(event: ExamScreenUIEvent) {
         when (event) {
             is ExamScreenUIEvent.OnExamNameChanged -> onExamNameChanged(event.name)
-            is ExamScreenUIEvent.OnExamDescriptionChanged -> onExamDescriptionChanged(event.name)
-            is ExamScreenUIEvent.OnExamDatePickerClick -> launch { onExamDatePickerClick() }
-            is ExamScreenUIEvent.OnExamTimePickerClick -> launch { onExamTimePickerClick() }
             is ExamScreenUIEvent.OnExamSubjectPickerClick -> launch { onExamSubjectPickerClick() }
-            is ExamScreenUIEvent.OnExamAttachmentPickerClick -> launch { onExamAttachmentPickerClick() }
             is ExamScreenUIEvent.OnExamCategoryPickerClick -> launch { onExamCategoryPickerClick() }
             is ExamScreenUIEvent.OnSaveExamButtonClick -> launch { onSaveExamButtonClick() }
-            is ExamScreenUIEvent.OnAttachmentPicked -> onAttachmentPicked(event.attachments)
             is ExamScreenUIEvent.OnCategoryPicked -> onCategoryPicked(event.category)
-            is ExamScreenUIEvent.OnDatePicked -> onDatePicked(event.date)
             is ExamScreenUIEvent.OnSaveExamConfirmClick -> launch { onSaveExamConfirmClick() }
             is ExamScreenUIEvent.OnSubjectPicked -> onSubjectPicked(event.subject)
-            is ExamScreenUIEvent.OnTimePicked -> onTimePicked(event.time)
             is ExamScreenUIEvent.OnDismissPopUp -> onDismissPopUp(event.popUp)
             is ExamScreenUIEvent.OnNavigateBackRequest -> onNavigateBackRequest()
             is ExamScreenUIEvent.OnNavigateToSubjectScreenRequest -> onNavigateToSubjectScreenRequest()
+            is ExamScreenUIEvent.OnCustomExamDayReminderButtonClicked -> onCustomExamDayReminderButtonClicked()
+            is ExamScreenUIEvent.OnCustomExamDeadlineReminderButtonClicked -> onCustomExamDeadlineReminderButtonClicked()
+            is ExamScreenUIEvent.OnExamDayReminderChanged -> onExamDayReminderChanged(event.reminder)
+            is ExamScreenUIEvent.OnExamDeadlineReminderChanged -> onExamDeadlineReminderChanged(event.reminder)
+            is ExamScreenUIEvent.OnExamNotesChanged -> onExamNotesChanged(event.notes)
+            is ExamScreenUIEvent.OnExamScoreChanged -> onExamScoreChanged(event.score)
+            is ExamScreenUIEvent.OnPickExamPeriodButtonClicked -> onPickExamPeriodButtonClicked()
+        }
+    }
+
+    private fun onPickExamPeriodButtonClicked() {
+        _state.update {
+            it.copy(popUps = it.popUps + CreateExamScreenPopUp.DuePeriodPicker)
+        }
+    }
+
+    private fun onExamScoreChanged(score: Int?) {
+        viewModelScope.launch {
+            eventRepository.updateExamScore(examId, score).collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _state.update {
+                            it.copy(popUps = it.popUps + CreateExamScreenPopUp.Loading)
+                        }
+                    }
+                    is Result.Error -> {
+                        _state.update {
+                            it.copy(
+                                popUps = it.popUps
+                                    .minus(CreateExamScreenPopUp.Loading)
+                                    .plus(CreateExamScreenPopUp.Error(UIText.DynamicString(result.throwable.message ?: "Unknown error")))
+                            )
+                        }
+                    }
+                    is Result.Success -> {
+                        _state.update { it.copy(popUps = it.popUps - CreateExamScreenPopUp.Loading) }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun onExamNotesChanged(notes: String) {
+        _state.update {
+            it.copy(notes = notes)
+        }
+    }
+
+    private fun onExamDeadlineReminderChanged(reminder: ReminderOption) {
+        _state.update {
+            it.copy(deadlineReminder = reminder)
+        }
+    }
+
+    private fun onExamDayReminderChanged(reminder: ReminderOption) {
+        _state.update {
+            it.copy(dueReminder = reminder)
+        }
+    }
+
+    private fun onCustomExamDeadlineReminderButtonClicked() {
+        _state.update {
+            it.copy(popUps = it.popUps + CreateExamScreenPopUp.CustomDeadlineReminderPicker)
+        }
+    }
+
+    private fun onCustomExamDayReminderButtonClicked() {
+        _state.update {
+            it.copy(popUps = it.popUps + CreateExamScreenPopUp.CustomDueReminderPicker)
         }
     }
 
@@ -91,24 +153,12 @@ class ExamScreenViewModel @AssistedInject constructor(
         }
     }
 
-    private fun onTimePicked(time: LocalTime) {
-        _state.update { it.copy(time = time) }
-    }
-
     private fun onSubjectPicked(subject: Subject) {
         _state.update { it.copy(subject = subject) }
     }
 
-    private fun onDatePicked(date: LocalDate) {
-        _state.update { it.copy(date = date) }
-    }
-
     private fun onCategoryPicked(category: ExamCategory) {
         _state.update { it.copy(category = category) }
-    }
-
-    private fun onAttachmentPicked(attachments: List<Attachment>) {
-        _state.update { it.copy(attachments = attachments) }
     }
 
     init {
@@ -139,14 +189,19 @@ class ExamScreenViewModel @AssistedInject constructor(
                                 _state.update {
                                     it.copy(
                                         isEditMode = true,
-                                        name = examWithSubject.exam.title,
-                                        date = examWithSubject.exam.date,
-                                        time = examWithSubject.exam.reminder,
+                                        examTitle = examWithSubject.exam.title,
+                                        dueDate = examWithSubject.exam.dueDate,
+                                        deadline = examWithSubject.exam.deadline,
+                                        dueReminder = with(examWithSubject.exam) {
+                                            dueReminder?.toReminderOption(dueDate, ReminderType.DUE)
+                                        },
+                                        deadlineReminder = with(examWithSubject.exam) {
+                                            deadlineReminder?.toReminderOption(deadline, ReminderType.DEADLINE)
+                                        },
                                         subject = examWithSubject.subject,
                                         category = examWithSubject.exam.category,
                                         score = examWithSubject.exam.score,
-                                        attachments = examWithSubject.exam.attachments,
-                                        description = examWithSubject.exam.description
+                                        notes = examWithSubject.exam.notes
                                     )
                                 }
                             }
@@ -193,15 +248,15 @@ class ExamScreenViewModel @AssistedInject constructor(
         try {
             val exam = Exam(
                 id = if (examId != "-1") examId else UUID.randomUUID().toString(),
-                title = _state.value.name,
-                date = _state.value.date ?: throw MissingRequiredFieldException.Date(),
-                reminder = _state.value.time ?: throw MissingRequiredFieldException.Time(),
-                subjectId = _state.value.subject?.id
-                    ?: throw MissingRequiredFieldException.Subject(),
+                title = _state.value.examTitle,
+                dueDate = _state.value.dueDate,
+                dueReminder = _state.value.dueReminder?.toLocalDateTime(_state.value.dueDate),
+                deadline = _state.value.deadline,
+                deadlineReminder = _state.value.deadlineReminder?.toLocalDateTime(_state.value.deadline),
+                subjectId = _state.value.subject?.id ?: throw MissingRequiredFieldException.Subject(),
                 category = _state.value.category,
-                description = _state.value.description,
-                attachments = _state.value.attachments,
-                score = _state.value.score
+                notes = _state.value.notes,
+                score = _state.value.score,
             )
             viewModelScope.launch {
                 if (examId == "-1") {
@@ -212,9 +267,7 @@ class ExamScreenViewModel @AssistedInject constructor(
             }
         } catch (e: MissingRequiredFieldException) {
             val errorMessage = when (e) {
-                is MissingRequiredFieldException.Date -> UIText.StringResource(R.string.date_cannot_be_empty)
                 is MissingRequiredFieldException.Subject -> UIText.StringResource(R.string.subject_cannot_be_empty)
-                is MissingRequiredFieldException.Time -> UIText.StringResource(R.string.time_cannot_be_empty)
                 is MissingRequiredFieldException.Title -> UIText.StringResource(R.string.exam_name_cannot_be_empty)
             }
             _state.update {
@@ -243,6 +296,22 @@ class ExamScreenViewModel @AssistedInject constructor(
                     }
                 }
                 is Result.Success -> {
+                    exam.dueReminder?.let { dueReminder ->
+                        scheduleReminder(
+                            context = application.applicationContext,
+                            localDateTime = dueReminder,
+                            title = exam.title,
+                            reminderId = Pair(exam, dueReminder).hashCode()
+                        )
+                    }
+                    exam.deadlineReminder?.let { deadlineReminder ->
+                        scheduleReminder(
+                            context = application.applicationContext,
+                            localDateTime = deadlineReminder,
+                            title = exam.title,
+                            reminderId = Pair(exam, deadlineReminder).hashCode()
+                        )
+                    }
                     _state.update {
                         it.copy(
                             popUps = it.popUps
@@ -253,15 +322,6 @@ class ExamScreenViewModel @AssistedInject constructor(
                 }
             }
         }
-        scheduleReminder(
-            context = application.applicationContext,
-            localDateTime = LocalDateTime.of(
-                exam.date,
-                exam.reminder
-            ),
-            title = exam.title,
-            reminderId = exam.id.hashCode()
-        )
     }
 
     private suspend fun updateExam(exam: Exam) {
@@ -294,31 +354,10 @@ class ExamScreenViewModel @AssistedInject constructor(
                 }
             }
         }
-        scheduleReminder(
-            context = application.applicationContext,
-            localDateTime = LocalDateTime.of(
-                exam.date,
-                exam.reminder
-            ),
-            title = exam.title,
-            reminderId = exam.id.hashCode()
-        )
     }
 
     private fun onExamNameChanged(name: String) {
-        _state.value = _state.value.copy(name = name)
-    }
-
-    private fun onExamDescriptionChanged(description: String) {
-        _state.value = _state.value.copy(description = description)
-    }
-
-    private fun onExamDatePickerClick() {
-        _state.update { it.copy(popUps = it.popUps + CreateExamScreenPopUp.DatePicker) }
-    }
-
-    private fun onExamTimePickerClick() {
-        _state.update { it.copy(popUps = it.popUps + CreateExamScreenPopUp.TimePicker) }
+        _state.value = _state.value.copy(examTitle = name)
     }
 
     private fun onExamSubjectPickerClick() {
@@ -326,11 +365,7 @@ class ExamScreenViewModel @AssistedInject constructor(
     }
 
     private fun onExamCategoryPickerClick() {
-        _state.update { it.copy(popUps = it.popUps + CreateExamScreenPopUp.ExamCategoryPicker) }
-    }
-
-    private fun onExamAttachmentPickerClick() {
-        _state.update { it.copy(popUps = it.popUps + CreateExamScreenPopUp.AttachmentPicker) }
+        _state.update { it.copy(popUps = it.popUps + CreateExamScreenPopUp.CustomExamCategoryPicker) }
     }
 
     override fun onCleared() {

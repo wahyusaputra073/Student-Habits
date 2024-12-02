@@ -1,5 +1,11 @@
 package com.wahyusembiring.onboarding
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -195,6 +202,65 @@ private fun OnBoardingScreen(
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyMedium
         )
+
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.S)
+@Composable
+private fun OnBoardingPermissionScreen() {
+
+    val context = LocalContext.current
+
+    val activityLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        AsyncImage(
+            model = R.drawable.onboarding_reminder_permission,
+            contentDescription = stringResource(R.string.permission_needed),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 64.dp),
+            alignment = Alignment.Center
+        )
+
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.Large))
+
+        Text(
+            text = stringResource(R.string.permission_needed),
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.Medium))
+
+        Text(
+            text = stringResource(R.string.to_be_able_to_use_the_application_properly_please_give_permission_to_schedule_reminders),
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.Medium))
+
+        Button(
+            onClick = {
+                val intent = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                intent.setData(Uri.fromParts("package", context.packageName, null))
+                activityLauncher.launch(intent)
+            }
+        ) {
+            Text(text = stringResource(R.string.grant_permission))
+        }
 
     }
 }

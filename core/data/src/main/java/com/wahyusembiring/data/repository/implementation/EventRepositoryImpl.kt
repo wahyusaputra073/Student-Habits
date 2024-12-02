@@ -127,6 +127,20 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun updateCompletedStatus(
+        homeworkId: String,
+        isCompleted: Boolean
+    ): Flow<Result<Unit>> {
+        return flow<Result<Unit>> {
+            emit(Result.Loading())
+            homeworkService.updateCompletedStatus(homeworkId, isCompleted)
+            homeworkDao.updateCompletedStatus(homeworkId, isCompleted)
+            emit(Result.Success(Unit))
+        }.catch {
+            emit(Result.Error(it))
+        }
+    }
+
     override fun getAllExamWithSubject(): Flow<Result<Flow<List<ExamWithSubject>>>> {
         return flow<Result<Flow<List<ExamWithSubject>>>> {
             emit(Result.Loading())
@@ -154,6 +168,17 @@ class EventRepositoryImpl @Inject constructor(
             emit(Result.Loading())
             examService.saveExam(exam)
             examDao.updateExam(exam)
+            emit(Result.Success(Unit))
+        }.catch {
+            emit(Result.Error(it))
+        }
+    }
+
+    override fun updateExamScore(examId: String, score: Int?): Flow<Result<Unit>> {
+        return flow<Result<Unit>> {
+            emit(Result.Loading())
+            examService.updateExamScore(examId, score)
+            examDao.updateExamScore(examId, score)
             emit(Result.Success(Unit))
         }.catch {
             emit(Result.Error(it))

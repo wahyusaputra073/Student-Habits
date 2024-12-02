@@ -44,7 +44,7 @@ import com.wahyusembiring.thesisplanner.R
 import com.wahyusembiring.thesisplanner.component.ArticleList
 import com.wahyusembiring.thesisplanner.component.Section
 import com.wahyusembiring.thesisplanner.component.TaskList
-import com.wahyusembiring.ui.component.button.AddDateButton
+import com.wahyusembiring.ui.component.button.DatePickerButton
 import com.wahyusembiring.ui.component.modalbottomsheet.component.NavigationAndActionButtonHeader
 import com.wahyusembiring.ui.component.popup.alertdialog.confirmation.ConfirmationAlertDialog
 import com.wahyusembiring.ui.component.popup.picker.datepicker.DatePicker
@@ -53,7 +53,6 @@ import com.wahyusembiring.ui.util.checkForPermissionOrLaunchPermissionLauncher
 import com.wahyusembiring.ui.util.getFileAccessPermissionRequest
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.util.Date
 import java.util.UUID
 
 @Composable
@@ -271,7 +270,7 @@ private fun ThesisPlannerScreen(
                 text = stringResource(R.string.due_date),
                 style = MaterialTheme.typography.bodySmall,
             )
-            AddDateButton(
+            DatePickerButton(
                 date = task.dueDate,
                 onClicked = {
                     onUIEvent(ThesisPlannerScreenUIEvent.OnDatePickerButtonClick)

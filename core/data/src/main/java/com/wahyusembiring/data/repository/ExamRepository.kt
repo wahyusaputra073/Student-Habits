@@ -11,4 +11,5 @@ interface ExamRepository {
     fun saveExam(exam: Exam): Flow<Result<String>>
     fun updateExam(exam: Exam): Flow<Result<Unit>>
     fun deleteExam(exam: Exam): Flow<Result<Unit>>
+    fun updateExamScore(examId: String, score: Int?): Flow<Result<Unit>>
 }

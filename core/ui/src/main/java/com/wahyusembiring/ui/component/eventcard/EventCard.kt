@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.imageLoader
 import com.wahyusembiring.common.util.withZeroPadding
-import com.wahyusembiring.data.model.DeadlineTime
 import com.wahyusembiring.data.model.ExamWithSubject
 import com.wahyusembiring.data.model.HomeworkWithSubject
 import com.wahyusembiring.data.model.entity.Reminder
@@ -148,7 +147,6 @@ private fun Body(
                         subjectColor = event.subject.color,
                         subjectName = event.subject.name,
                         eventType = stringResource(R.string.exam),
-                        times = event.exam.deadline
                     )
                 }
 
@@ -162,7 +160,6 @@ private fun Body(
                         subjectColor = event.subject.color,
                         subjectName = event.subject.name,
                         eventType = stringResource(R.string.task),
-                        times = event.homework.deadline
                     )
                 }
 
@@ -170,13 +167,12 @@ private fun Body(
                     BodyEventList(
                         onClick = { onClick(event) },
                         onDeletedClick = { onDeleteEventClick(event) },
-                        isChecked = event.completed,
+                        isChecked = true,
                         onCheckedChange = { onEventCheckedChange(event, it) },
                         title = event.title,
                         subjectColor = null,
                         subjectName = null,
                         eventType = stringResource(R.string.reminder),
-                        times = null
 
                     )
                 }
@@ -190,7 +186,6 @@ private fun BodyEventList(
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     title: String,
-    times: DeadlineTime?,
     onClick: () -> Unit = {},
     onDeletedClick: () -> Unit = {},
     subjectColor: Color?,
@@ -235,14 +230,6 @@ private fun BodyEventList(
                         style = MaterialTheme.typography.bodyMedium
                     )
 
-                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.Small))
-
-                    if (times != null) {
-                        Text(
-                            text = "${times.hour.withZeroPadding()}:${times.minute.withZeroPadding()}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
                 }
 
 

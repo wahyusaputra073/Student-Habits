@@ -12,24 +12,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.wahyusembiring.common.util.withZeroPadding
-import com.wahyusembiring.data.model.DeadlineTime
 import com.wahyusembiring.ui.R
-
+import java.time.LocalTime
 
 @Composable
-fun AddDeadlineButton(
+fun TimePickerButton(
     modifier: Modifier = Modifier,
-    times: DeadlineTime?,
+    time: LocalTime?,
+    label: String,
     onClicked: (() -> Unit)? = null,
-    permissionCheck: (() -> Unit)? = null // Menambahkan parameter untuk memeriksa izin
 ) {
     ListItem(
         modifier = modifier
             .then(
                 if (onClicked != null) {
                     Modifier.clickable {
-                        // Jika ada fungsi permissionCheck, jalankan
-                        permissionCheck?.invoke() ?: onClicked()
+                        onClicked()
                     }
                 } else {
                     Modifier
@@ -37,22 +35,22 @@ fun AddDeadlineButton(
             ),
         leadingContent = {
             Icon(
-                painter = painterResource(id = R.drawable.ic_attendance),
-                contentDescription = stringResource(R.string.add_deadline),
+                painter = painterResource(id = R.drawable.ic_reminder),
+                contentDescription = stringResource(R.string.add_reminder),
                 tint = MaterialTheme.colorScheme.primary
             )
         },
         headlineContent = {
-            if (times != null) {
+            if (time != null) {
                 Column {
                     Text(
-                        text = "${stringResource(R.string.deadline_at)} ${times.hour.withZeroPadding()}:${times.minute.withZeroPadding()}"
+                        text = "${time.hour.withZeroPadding()}:${time.minute.withZeroPadding()}"
                     )
                 }
             } else {
                 Text(
                     color = TextFieldDefaults.colors().disabledTextColor,
-                    text = stringResource(id = R.string.add_deadline),
+                    text = label,
                 )
             }
         }

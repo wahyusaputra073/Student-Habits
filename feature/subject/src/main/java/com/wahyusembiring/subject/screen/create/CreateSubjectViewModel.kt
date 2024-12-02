@@ -14,8 +14,10 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -35,6 +37,9 @@ class CreateSubjectViewModel @AssistedInject constructor(
 
     private val _state = MutableStateFlow(CreateSubjectScreenUIState())
     val state = _state.asStateFlow()
+
+    private val _oneTimeEvent: Channel<CreateSubjectScreenOneTimeEvent> = Channel()
+    val oneTimeEvent = _oneTimeEvent.receiveAsFlow()
 
     init {
         if (subjectId != "-1") {
@@ -88,28 +93,39 @@ class CreateSubjectViewModel @AssistedInject constructor(
             is CreateSubjectScreenUIEvent.OnPickColorButtonClicked -> onPickColorButtonClicked()
             is CreateSubjectScreenUIEvent.OnLecturerSelected -> onLecturerSelected(event.lecturer)
             is CreateSubjectScreenUIEvent.OnColorPicked -> onColorPicked(event.color)
-            is CreateSubjectScreenUIEvent.OnColorPickerDismiss -> onColorPickerDismiss()
-            is CreateSubjectScreenUIEvent.OnErrorDialogDismiss -> onErrorDialogDismiss()
             is CreateSubjectScreenUIEvent.OnSaveConfirmationDialogConfirm -> onSaveConfirmationDialogConfirm()
-            is CreateSubjectScreenUIEvent.OnSaveConfirmationDialogDismiss -> onSaveConfirmationDialogDismiss()
-            is CreateSubjectScreenUIEvent.OnSubjectSavedDialogDismiss -> onSubjectSavedDialogDismiss()
+            is CreateSubjectScreenUIEvent.OnDescriptionChanged -> onDescriptionChanged(event.description)
+            is CreateSubjectScreenUIEvent.OnNavigateUpButtonClicked -> onNavigateUpButtonClicked()
+            is CreateSubjectScreenUIEvent.OnPickLecturerButtonClicked -> onPickLecturerButtonClicked()
+            is CreateSubjectScreenUIEvent.OnDismissPopup -> onDismissPopup(event.popup)
+            is CreateSubjectScreenUIEvent.OnAddNewLecturerButtonClicked -> onAddNewLecturerButtonClicked()
         }
     }
 
-    private fun onSubjectSavedDialogDismiss() {
-        _state.update { it.copy(showSubjectSavedDialog = false) }
+    private fun onAddNewLecturerButtonClicked() {
+        _oneTimeEvent.trySend(CreateSubjectScreenOneTimeEvent.NavigateToCreateLecturer)
     }
 
-    private fun onSaveConfirmationDialogDismiss() {
-        _state.update { it.copy(showSaveConfirmationDialog = false) }
+    private fun onDismissPopup(popup: CreateSubjectScreenPopUp) {
+        _state.update {
+            it.copy(popUps = it.popUps - popup)
+        }
     }
 
-    private fun onErrorDialogDismiss() {
-        _state.update { it.copy(errorMessage = null) }
+    private fun onPickLecturerButtonClicked() {
+        _state.update {
+            it.copy(popUps = it.popUps + CreateSubjectScreenPopUp.LecturerPicker)
+        }
     }
 
-    private fun onColorPickerDismiss() {
-        _state.update { it.copy(showColorPicker = false) }
+    private fun onNavigateUpButtonClicked() {
+        _oneTimeEvent.trySend(CreateSubjectScreenOneTimeEvent.NavigateUp)
+    }
+
+    private fun onDescriptionChanged(description: String) {
+        _state.update {
+            it.copy(description = description)
+        }
     }
 
     private fun onColorPicked(color: Color) {
@@ -121,31 +137,24 @@ class CreateSubjectViewModel @AssistedInject constructor(
     }
 
     private fun onPickColorButtonClicked() {
-        _state.update { it.copy(showColorPicker = true) }
-    }
-
-    private fun onSaveButtonClicked() {
-        _state.update { it.copy(showSaveConfirmationDialog = true) }
-    }
-
-    private fun onSaveConfirmationDialogConfirm() {
-        _state.update { it.copy(showSavingLoading = true) }
-        viewModelScope.launch {
-            saveSubjectSafely()
+        _state.update {
+            it.copy(popUps = it.popUps + CreateSubjectScreenPopUp.ColorPicker)
         }
     }
 
-    private suspend fun saveSubjectSafely() {
-        try {
-            saveSubject()
-            _state.update {
-                it.copy(
-                    showSavingLoading = false,
-                    showSubjectSavedDialog = true
-                )
+    private fun onSaveButtonClicked() {
+        _state.update {
+            it.copy(popUps = it.popUps + CreateSubjectScreenPopUp.SaveConfirmation)
+        }
+    }
+
+    private fun onSaveConfirmationDialogConfirm() {
+        viewModelScope.launch {
+            try {
+                saveSubject()
+            } catch (e: MissingRequiredFieldException) {
+                handleMissingFieldException(e)
             }
-        } catch (e: MissingRequiredFieldException) {
-            handleMissingFieldException(e)
         }
     }
 
@@ -158,32 +167,57 @@ class CreateSubjectViewModel @AssistedInject constructor(
             lecturerId = _state.value.lecturer?.id ?: throw MissingRequiredFieldException.Lecture()
         )
         if (state.value.isEditMode) {
-            subjectRepository.updateSubject(subject.copy(id = subjectId)).collect {
-                when (it) {
-                    is Result.Loading -> {}
-                    is Result.Error -> { throw it.throwable }
-                    is Result.Success -> {}
+            subjectRepository.updateSubject(subject.copy(id = subjectId)).collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _state.update {
+                            it.copy(popUps = it.popUps + CreateSubjectScreenPopUp.Loading)
+                        }
+                    }
+                    is Result.Error -> { throw result.throwable }
+                    is Result.Success -> {
+                        _state.update {
+                            it.copy(
+                                popUps = it.popUps
+                                    .minus(CreateSubjectScreenPopUp.Loading)
+                                    .plus(CreateSubjectScreenPopUp.SubjectSaved)
+                            )
+                        }
+                    }
                 }
             }
         } else {
-            subjectRepository.saveSubject(subject).collect {
-                when (it) {
-                    is Result.Loading -> {}
-                    is Result.Error -> { throw it.throwable }
-                    is Result.Success -> {}
+            subjectRepository.saveSubject(subject).collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _state.update {
+                            it.copy(popUps = it.popUps + CreateSubjectScreenPopUp.Loading)
+                        }
+                    }
+                    is Result.Error -> { throw result.throwable }
+                    is Result.Success -> {
+                        _state.update {
+                            it.copy(
+                                popUps = it.popUps
+                                    .minus(CreateSubjectScreenPopUp.Loading)
+                                    .plus(CreateSubjectScreenPopUp.SubjectSaved)
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 
     private fun handleMissingFieldException(e: MissingRequiredFieldException) {
-        _state.update { it.copy(showSavingLoading = false) }
         val errorMessage = when (e) {
             is MissingRequiredFieldException.SubjectName -> UIText.StringResource(R.string.subject_name_is_required)
             is MissingRequiredFieldException.Room -> UIText.StringResource(R.string.room_is_required)
             is MissingRequiredFieldException.Lecture -> UIText.StringResource(R.string.please_select_a_lecture)
         }
-        _state.update { it.copy(errorMessage = errorMessage) }
+        _state.update {
+            it.copy(popUps = it.popUps + CreateSubjectScreenPopUp.Error(errorMessage))
+        }
     }
 
     private fun updateSubjectName(name: String) {

@@ -40,6 +40,7 @@ import com.wahyusembiring.ui.component.popup.alertdialog.confirmation.Confirmati
 import com.wahyusembiring.ui.component.popup.alertdialog.error.ErrorAlertDialog
 import com.wahyusembiring.ui.component.popup.alertdialog.information.InformationAlertDialog
 import com.wahyusembiring.ui.component.popup.alertdialog.loading.LoadingAlertDialog
+import com.wahyusembiring.ui.component.popup.alertdialog.success.SuccessAlertDialog
 import com.wahyusembiring.ui.component.topappbar.TopAppBar
 import com.wahyusembiring.ui.theme.spacing
 import kotlinx.coroutines.launch
@@ -116,7 +117,7 @@ fun SubjectScreen(
                 )
             }
             is SubjectScreenPopUp.SubjectDeleted -> {
-                InformationAlertDialog(
+                SuccessAlertDialog(
                     title = stringResource(R.string.success),
                     message = stringResource(R.string.subject_deleted_successfully),
                     buttonText = stringResource(R.string.ok),

@@ -17,7 +17,7 @@ interface SubjectRepository {
 
     fun getAllSubjectWithExamAndHomework(): Flow<Result<Flow<List<SubjectWithExamAndHomework>>>>
 
-    fun getAllSubjectWithExamAndHomework(scored: Boolean): Flow<Result<Flow<List<SubjectWithExamAndHomework>>>>
+//    fun getAllSubjectWithExamAndHomework(scored: Boolean): Flow<Result<Flow<List<SubjectWithExamAndHomework>>>>
 
     fun saveSubject(subject: Subject): Flow<Result<Unit>>
 

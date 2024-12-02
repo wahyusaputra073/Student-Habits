@@ -18,8 +18,11 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.util.fastFirst
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
+import com.wahyusembiring.ui.ReminderOption
+import java.time.LocalDateTime
 
 fun getWindowSize(context: Context): Size {
     val windowManager =
@@ -127,4 +130,25 @@ private fun getVectorBitmap(context: Context, drawableId: Int): Bitmap? {
     }
 
     return bitmap
+}
+
+fun ReminderOption.toLocalDateTime(dDay: LocalDateTime): LocalDateTime {
+    return when (this) {
+        is ReminderOption.Custom -> dateTime
+        is ReminderOption.Predefined -> {
+            dDay.minus(duration)
+        }
+    }
+}
+
+enum class ReminderType {
+    DUE, DEADLINE
+}
+
+fun LocalDateTime.toReminderOption(dDay: LocalDateTime, reminderType: ReminderType): ReminderOption {
+    val listOfPredefined = when (reminderType) {
+        ReminderType.DUE -> ReminderOption.dueReminderDefaultOptions
+        ReminderType.DEADLINE -> ReminderOption.deadlineReminderDefaultOptions
+    }
+    return listOfPredefined.firstOrNull { plus(it.duration) == dDay } ?: ReminderOption.Custom(this)
 }

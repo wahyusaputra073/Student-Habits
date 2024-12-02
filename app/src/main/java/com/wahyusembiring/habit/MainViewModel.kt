@@ -7,7 +7,6 @@ import com.wahyusembiring.common.navigation.Screen
 import com.wahyusembiring.data.Result
 import com.wahyusembiring.data.repository.AuthRepository
 import com.wahyusembiring.data.repository.DataStoreRepository
-import com.wahyusembiring.data.repository.MainRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -24,7 +23,6 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val dataStoreRepository: DataStoreRepository,
-    private val mainRepository: MainRepository
 ) : ViewModel() {
 
     companion object {
@@ -55,28 +53,6 @@ class MainViewModel @Inject constructor(
 //            launch { cloudToLocalSync() }
             launch { setupStartDestination() }
             _isAppReady.value = true
-        }
-    }
-
-    fun onActivityPause() {
-//        viewModelScope.launch { localToCloudSync() }
-    }
-
-    private suspend fun localToCloudSync() {
-        mainRepository.syncToCloud().collect {
-            Log.d(TAG, "localToCloudSync: ${it.javaClass.simpleName}")
-            if (it is com.wahyusembiring.data.Result.Error) {
-                Log.e(TAG, "localToCloudSync: ${it.throwable.message}", it.throwable)
-            }
-        }
-    }
-
-    private suspend fun cloudToLocalSync() {
-        mainRepository.syncToLocal().collect {
-            Log.d(TAG, "cloudToLocalSync: ${it.javaClass.simpleName}")
-            if (it is com.wahyusembiring.data.Result.Error) {
-                Log.e(TAG, "cloudToLocalSync: ${it.throwable.message}", it.throwable)
-            }
         }
     }
 

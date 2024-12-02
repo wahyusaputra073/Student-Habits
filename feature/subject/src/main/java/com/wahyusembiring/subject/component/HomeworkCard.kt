@@ -43,11 +43,12 @@ fun HomeworkCard(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (homework.score != null) {
-                        homework.score.toString()
-                    } else {
-                        "?"
-                    },
+//                    text = if (homework.score != null) {
+//                        homework.score.toString()
+//                    } else {
+//                        "?"
+//                    },
+                    text = "?",
                     style = MaterialTheme.typography.titleMedium,
                     color = subject.color.contrastColor()
                 )

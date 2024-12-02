@@ -13,11 +13,5 @@ data class CreateSubjectScreenUIState(
     val description: String = "",
     val lecturer: Lecturer? = null,
     val lecturers: List<Lecturer> = emptyList(),
-
-    //popup
-    val showColorPicker: Boolean = false,
-    val showSaveConfirmationDialog: Boolean = false,
-    val showSavingLoading: Boolean = false,
-    val showSubjectSavedDialog: Boolean = false,
-    val errorMessage: UIText? = null
+    val popUps: List<CreateSubjectScreenPopUp> = emptyList()
 )

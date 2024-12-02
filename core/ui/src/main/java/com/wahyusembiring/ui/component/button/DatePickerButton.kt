@@ -1,31 +1,25 @@
 package com.wahyusembiring.ui.component.button
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import com.wahyusembiring.datetime.Moment
 import com.wahyusembiring.datetime.formatter.FormattingStyle
 import com.wahyusembiring.ui.R
 import java.time.LocalDate
-import java.util.Date
 import kotlin.time.Duration.Companion.days
 
 
 @Composable
-fun AddDateButton(
+fun DatePickerButton(
     modifier: Modifier = Modifier,
     date: LocalDate?,
     onClicked: (() -> Unit)? = null,

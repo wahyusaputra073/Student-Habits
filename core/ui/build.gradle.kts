@@ -27,4 +27,6 @@ dependencies {
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
+    implementation(libs.lottie.compose)
+
 }

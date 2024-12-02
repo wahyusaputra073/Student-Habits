@@ -93,6 +93,7 @@ class LecturerRepositoryImpl @Inject constructor(
             emit(Result.Loading())
             lecturerService.deleteLecturerById(id)
             lecturerDao.deleteLecturerById(id)
+            emit(Result.Success(Unit))
         }.catch {
             emit(Result.Error(it))
         }
